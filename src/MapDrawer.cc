@@ -41,6 +41,17 @@ MapDrawer::MapDrawer(Map* pMap, const string &strSettingPath):mpMap(pMap)
 
 }
 
+MapDrawer::MapDrawer(Map *pMap, const ViewerParameters &viewerParams):
+    mpMap(pMap)
+{
+    mKeyFrameSize      = viewerParams.m_keyFrameSize;
+    mKeyFrameLineWidth = viewerParams.m_keyFrameLineWidth;
+    mGraphLineWidth    = viewerParams.m_graphLineWidth;
+    mPointSize         = viewerParams.m_pointSize;
+    mCameraSize        = viewerParams.m_cameraSize;
+    mCameraLineWidth   = viewerParams.m_cameraLineWidth;
+}
+
 void MapDrawer::DrawMapPoints()
 {
     const vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
