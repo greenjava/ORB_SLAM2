@@ -31,14 +31,25 @@ namespace ORB_SLAM2
  */
 struct ORB_SLAM2_EXPORT Camera
 {
-    /// Instrinsic parameters
-    float m_fx, m_fy, m_cx, m_cy;
-    ///Distorsion parameters
-    float m_k1, m_k2, m_p1, m_p2, m_k3;
+    ///Constructor with parameters
+    Camera(size_t width, size_t height, float fps, float fx, float fy, float cx, float cy,
+          float k1 = 0.f, float k2 = 0.f, float p1 = 0.f, float p2 = 0.f , float k3= 0.f,
+           int rgb = 1 , float bf = 0.f, float thDepth = 0.f, float depthMapFactor = 0.f):
+        m_width(width), m_height(height), m_fps(fps),
+        m_fx(fx), m_fy(fy), m_cx(cx), m_cy(cy),
+        m_k1(k1), m_k2(k2), m_p1(p1), m_p2(p2), m_k3(k3),
+        m_rgb(rgb), m_bf(bf), m_thDepth(thDepth), m_depthMapFactor(depthMapFactor)
+    {
+    }
+
     /// Size of images
     size_t m_width, m_height;
     ///Framerate
     float m_fps;
+    /// Instrinsic parameters
+    float m_fx, m_fy, m_cx, m_cy;
+    ///Distorsion parameters
+    float m_k1, m_k2, m_p1, m_p2, m_k3;
     ///Color format (0 is BGR, 1 is RGB)
     int m_rgb;
     ///Stereo baseline times fx (only used on Stereo & RGB-D)
@@ -54,6 +65,14 @@ struct ORB_SLAM2_EXPORT Camera
  */
 struct ORB_SLAM2_EXPORT OrbParameters
 {
+    ///Constructor with parameters
+    OrbParameters(unsigned int nFeatures = 1000, float scaleFactor = 1.2f , int nLevels = 8,
+                  unsigned int iniThFAST = 20, unsigned int minThFAST = 7):
+        m_nFeatures(nFeatures),m_scaleFactor(scaleFactor),m_nLevels(nLevels),
+        m_iniThFAST(iniThFAST),m_minThFAST(minThFAST)
+    {
+    }
+
     ///Number of features per image
     unsigned int m_nFeatures;
     /// Scale factor between levels in the scale pyramid
@@ -76,16 +95,27 @@ struct ORB_SLAM2_EXPORT OrbParameters
  */
 struct ORB_SLAM2_EXPORT ViewerParameters
 {
+    ///Constructor with parameters
+    ViewerParameters(float keyFrameSize = 0.05f, float keyFrameLineWidth = 1.f, float graphLineWidth = 1.f,
+                     float pointSize = 2.f, float cameraSize = 0.15f, float cameraLineWidth = 2.f,
+                     float viewpointX = 0.f, float viewpointY = -10.f, float viewpointZ = -0.1f,
+                     float viewpointF = 2000.f):
+        m_keyFrameSize(keyFrameSize),m_keyFrameLineWidth(keyFrameLineWidth),m_graphLineWidth(graphLineWidth),
+        m_pointSize(pointSize), m_cameraSize(cameraSize), m_cameraLineWidth(cameraLineWidth),
+        m_viewpointX(viewpointX), m_viewpointY(viewpointY), m_viewpointZ(viewpointZ), m_viewpointF(viewpointF)
+    {
+    }
+
     float m_keyFrameSize;
-    unsigned int m_keyFrameLineWidth;
-    unsigned int m_graphLineWidth;
-    unsigned int m_pointSize;
-    double m_cameraSize;
-    unsigned int m_cameraLineWidth;
-    int m_viewpointX;
-    int m_viewpointY;
-    int m_viewpointZ;
-    int m_viewpointF;
+    float m_keyFrameLineWidth;
+    float m_graphLineWidth;
+    float m_pointSize;
+    float m_cameraSize;
+    float m_cameraLineWidth;
+    float m_viewpointX;
+    float m_viewpointY;
+    float m_viewpointZ;
+    float m_viewpointF;
 };
 
 }//namespace ORB_SLAM2
