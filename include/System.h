@@ -36,6 +36,7 @@
 #include "ORBVocabulary.h"
 #include "Viewer.h"
 #include "orb_slam2_export.h"
+#include "Utils.h"
 
 namespace ORB_SLAM2
 {
