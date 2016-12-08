@@ -519,4 +519,40 @@ void System::SaveTrajectoryKITTI(const string &filename)
     cout << endl << "trajectory saved!" << endl;
 }
 
+const vector< ::cv::Mat > System::getMapPoints() const
+{
+    const vector<MapPoint*> &vpMPs = mpMap->GetAllMapPoints();
+
+    vector< ::cv::Mat > mapPoints;
+    mapPoints.reserve(vpMPs.size());
+
+    for(const auto& p : vpMPs)
+    {
+        if(!p->isBad())
+        {
+            mapPoints.push_back(p->GetWorldPos());
+        }
+    }
+
+    return mapPoints;
+}
+
+const vector< ::cv::Mat > System::getRefMapPoints() const
+{
+    const vector<MapPoint*> &vpMPs = mpMap->GetReferenceMapPoints();
+
+    vector< ::cv::Mat > mapPoints;
+    mapPoints.reserve(vpMPs.size());
+
+    for(const auto& p : vpMPs)
+    {
+        if(!p->isBad())
+        {
+            mapPoints.push_back(p->GetWorldPos());
+        }
+    }
+
+    return mapPoints;
+}
+
 } //namespace ORB_SLAM
