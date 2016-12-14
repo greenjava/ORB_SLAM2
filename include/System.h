@@ -65,9 +65,18 @@ public:
     System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true);
 
     //Initialize the SLAM system without using settings file. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const Camera& camParams, const OrbParameters& orbParams,
+    System(ORBVocabulary *voc, const Camera& camParams, const OrbParameters& orbParams,
            const ViewerParameters& viewerParams,
            const eSensor sensor, const bool bUseViewer = true);
+
+
+    void setCameraParameters(const Camera& camParams);
+
+    void setOrbParameters(const OrbParameters& orbParams);
+
+    void setViewerParameters(const ViewerParameters& viewerParams);
+
+    void setDebugMode(const bool debug);
 
     // Proccess the given stereo frame. Images must be synchronized and rectified.
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
@@ -172,6 +181,7 @@ private:
     std::mutex mMutexMode;
     bool mbActivateLocalizationMode;
     bool mbDeactivateLocalizationMode;
+
 };
 
 }// namespace ORB_SLAM

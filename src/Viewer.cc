@@ -79,6 +79,31 @@ Viewer::Viewer(System *pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
     mViewpointF = viewerParams.m_viewpointF;
 }
 
+void Viewer::setCameraParameters(const Camera &camParams)
+{
+    float fps = camParams.m_fps;
+
+    if(fps<1)
+        fps=30;
+    mT = 1e3/fps;
+
+    mImageWidth = camParams.m_width;
+    mImageHeight = camParams.m_height;
+    if(mImageWidth<1 || mImageHeight<1)
+    {
+        mImageWidth = 640;
+        mImageHeight = 480;
+    }
+}
+
+void Viewer::setViewerParameters(const ViewerParameters &viewerParams)
+{
+    mViewpointX = viewerParams.m_viewpointX;
+    mViewpointY = viewerParams.m_viewpointY;
+    mViewpointZ = viewerParams.m_viewpointZ;
+    mViewpointF = viewerParams.m_viewpointF;
+}
+
 void Viewer::Run()
 {
     mbFinished = false;

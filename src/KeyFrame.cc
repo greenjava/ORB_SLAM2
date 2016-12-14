@@ -53,7 +53,7 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
             mGrid[i][j] = F.mGrid[i][j];
     }
 
-    SetPose(F.mTcw);    
+    SetPose(F.mTcw);
 }
 
 void KeyFrame::ComputeBoW()
@@ -153,7 +153,7 @@ void KeyFrame::UpdateBestCovisibles()
     }
 
     mvpOrderedConnectedKeyFrames = vector<KeyFrame*>(lKFs.begin(),lKFs.end());
-    mvOrderedWeights = vector<int>(lWs.begin(), lWs.end());    
+    mvOrderedWeights = vector<int>(lWs.begin(), lWs.end());
 }
 
 set<KeyFrame*> KeyFrame::GetConnectedKeyFrames()
@@ -456,7 +456,8 @@ void KeyFrame::SetErase()
 }
 
 void KeyFrame::SetBadFlag()
-{   
+{
+
     {
         unique_lock<mutex> lock(mMutexConnections);
         if(mnId==0)
@@ -487,6 +488,7 @@ void KeyFrame::SetBadFlag()
 
         // Assign at each iteration one children with a parent (the pair with highest covisibility weight)
         // Include that children as new parent candidate for the rest
+
         while(!mspChildrens.empty())
         {
             bool bContinue = false;
@@ -550,6 +552,8 @@ void KeyFrame::SetBadFlag()
 
     mpMap->EraseKeyFrame(this);
     mpKeyFrameDB->erase(this);
+
+
 }
 
 bool KeyFrame::isBad()

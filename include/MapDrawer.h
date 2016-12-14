@@ -40,6 +40,8 @@ public:
     MapDrawer(Map* pMap, const string &strSettingPath);
     MapDrawer(Map* pMap, const ViewerParameters& viewerParams);
 
+    void setViewerParameters(const ViewerParameters& viewerParams);
+
     Map* mpMap;
 
     void DrawMapPoints();

@@ -46,6 +46,10 @@ public:
     Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking,
            const Camera& camParams, const ViewerParameters& viewerParams);
 
+    void setCameraParameters(const Camera& camParams);
+
+    void setViewerParameters(const ViewerParameters& viewerParams);
+
     // Main thread function. Draw points, keyframes, the current camera pose and the last processed
     // frame. Drawing is refreshed according to the camera fps. We use Pangolin.
     void Run();

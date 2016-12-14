@@ -225,10 +225,10 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
 
     mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
-    if(sensor==System::STEREO)
+    if(mSensor==System::STEREO)
         mpORBextractorRight = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
-    if(sensor==System::MONOCULAR)
+    if(mSensor==System::MONOCULAR)
         mpIniORBextractor = new ORBextractor(2*nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
     cout << endl  << "ORB Extractor Parameters: " << endl;
@@ -238,13 +238,13 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
     cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
     cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;
 
-    if(sensor==System::STEREO || sensor==System::RGBD)
+    if(mSensor==System::STEREO || mSensor==System::RGBD)
     {
         mThDepth = mbf*(float)camParams.m_thDepth/fx;
         cout << endl << "Depth Threshold (Close/Far Points): " << mThDepth << endl;
     }
 
-    if(sensor==System::RGBD)
+    if(mSensor==System::RGBD)
     {
         mDepthMapFactor = camParams.m_depthMapFactor;
         if(fabs(mDepthMapFactor)<1e-5)
@@ -252,6 +252,34 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
         else
             mDepthMapFactor = 1.0f/mDepthMapFactor;
     }
+}
+
+void Tracking::setOrbParameters(const OrbParameters &orbParams)
+{
+
+    // Load ORB parameters
+
+    int nFeatures = orbParams.m_nFeatures;
+    float fScaleFactor = orbParams.m_scaleFactor;
+    int nLevels = orbParams.m_nLevels;
+    int fIniThFAST = orbParams.m_iniThFAST;
+    int fMinThFAST = orbParams.m_minThFAST;
+
+    mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
+
+    if(mSensor==System::STEREO)
+        mpORBextractorRight = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
+
+    if(mSensor==System::MONOCULAR)
+        mpIniORBextractor = new ORBextractor(2*nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
+
+    cout << endl  << "ORB Extractor Parameters: " << endl;
+    cout << "- Number of Features: " << nFeatures << endl;
+    cout << "- Scale Levels: " << nLevels << endl;
+    cout << "- Scale Factor: " << fScaleFactor << endl;
+    cout << "- Initial Fast Threshold: " << fIniThFAST << endl;
+    cout << "- Minimum Fast Threshold: " << fMinThFAST << endl;
+
 }
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
@@ -1609,14 +1637,14 @@ bool Tracking::Relocalization()
 
 void Tracking::Reset()
 {
-    mpViewer->RequestStop();
+    mpViewer->RequestFinish();
 
     cout << "System Reseting" << endl;
-    while(!mpViewer->isStopped())
+    while(!mpViewer->isFinished())
         std::this_thread::sleep_for(std::chrono::microseconds(3000));
 
     // Reset Local Mapping
-    cout << "Reseting Local Mapper...";
+    cout << "Reseting Local Mapper..."<<endl;
     mpLocalMapper->RequestReset();
     cout << " done" << endl;
 

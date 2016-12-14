@@ -114,9 +114,10 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     mpLoopCloser->SetLocalMapper(mpLocalMapper);
 }
 
-System::System(const string &strVocFile, const Camera &camParams, const OrbParameters &orbParams,
+System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters &orbParams,
                const ViewerParameters &viewerParams, const System::eSensor sensor, const bool bUseViewer):
     mSensor(sensor),
+    mpVocabulary(voc),
     mbReset(false),
     mbActivateLocalizationMode(false),
     mbDeactivateLocalizationMode(false)
@@ -138,21 +139,6 @@ System::System(const string &strVocFile, const Camera &camParams, const OrbParam
     else if(mSensor==RGBD)
         cout << "RGB-D" << endl;
 
-
-
-    //Load ORB Vocabulary
-    cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
-
-    mpVocabulary = new ORBVocabulary();
-    bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
-    if(!bVocLoad)
-    {
-        cerr << "Wrong path to vocabulary. " << endl;
-        cerr << "Falied to open at: " << strVocFile << endl;
-        exit(-1);
-    }
-    cout << "Vocabulary loaded!" << endl << endl;
-
     //Create KeyFrame Database
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
 
@@ -162,7 +148,6 @@ System::System(const string &strVocFile, const Camera &camParams, const OrbParam
     //Create Drawers. These are used by the Viewer
     mpFrameDrawer = new FrameDrawer(mpMap);
 
-    //TODO: Modify this
     mpMapDrawer = new MapDrawer(mpMap, viewerParams);
 
     //Initialize the Tracking thread
@@ -196,6 +181,42 @@ System::System(const string &strVocFile, const Camera &camParams, const OrbParam
     mpLoopCloser->SetTracker(mpTracker);
     mpLoopCloser->SetLocalMapper(mpLocalMapper);
 
+}
+
+void System::setCameraParameters(const Camera &camParams)
+{
+    mpTracker->ChangeCalibration(camParams);
+    mpViewer->setCameraParameters(camParams);
+}
+
+void System::setOrbParameters(const OrbParameters &orbParams)
+{
+   mpTracker->setOrbParameters(orbParams);
+}
+
+void System::setViewerParameters(const ViewerParameters &viewerParams)
+{
+   mpViewer->setViewerParameters(viewerParams);
+   mpMapDrawer->setViewerParameters(viewerParams);
+
+}
+
+void System::setDebugMode(const bool debug)
+{
+    if(debug)
+    {
+        if(!mptViewer)
+        {
+            mptViewer = new thread(&Viewer::Run, mpViewer);
+        }
+    }
+    else
+    {
+        if(mptViewer)
+        {
+            mpViewer->RequestFinish();
+        }
+    }
 }
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)
