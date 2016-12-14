@@ -393,8 +393,13 @@ void KeyFrame::EraseChild(KeyFrame *pKF)
 void KeyFrame::ChangeParent(KeyFrame *pKF)
 {
     unique_lock<mutex> lockCon(mMutexConnections);
-    mpParent = pKF;
-    pKF->AddChild(this);
+
+    if(pKF != this)
+    {
+        mpParent = pKF;
+        pKF->AddChild(this);
+    }
+
 }
 
 set<KeyFrame*> KeyFrame::GetChilds()
@@ -531,7 +536,10 @@ void KeyFrame::SetBadFlag()
         if(!mspChildrens.empty())
             for(set<KeyFrame*>::iterator sit=mspChildrens.begin(); sit!=mspChildrens.end(); sit++)
             {
-                (*sit)->ChangeParent(mpParent);
+                if(mpParent != this)
+                {
+                    (*sit)->ChangeParent(mpParent);
+                }
             }
 
         mpParent->EraseChild(this);
