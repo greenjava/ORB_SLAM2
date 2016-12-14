@@ -382,10 +382,14 @@ void System::Shutdown()
     while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished()  ||
           !mpViewer->isFinished()      || mpLoopCloser->isRunningGBA())
     {
+
         std::this_thread::sleep_for(std::chrono::microseconds(5000));
     }
 
-    pangolin::BindToContext("ORB-SLAM2: Map Viewer");
+    //Need version v0.5 of Pangolin
+    pangolin::DestroyWindow("ORB-SLAM2: Map Viewer");
+
+    cout<<"Shutdown the system..."<<endl;
 }
 
 void System::SaveTrajectoryTUM(const string &filename)
