@@ -42,9 +42,11 @@ class System;
 class ORB_SLAM2_EXPORT Viewer
 {
 public:
-    Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath);
     Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking,
            const Camera& camParams, const ViewerParameters& viewerParams);
+
+    Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath, bool mbReuseMap);
+
 
     void setCameraParameters(const Camera& camParams);
 
@@ -87,6 +89,8 @@ private:
 
     bool mbStopped;
     bool mbStopRequested;
+    bool mbReuseMap;
+
     std::mutex mMutexStop;
 
 };

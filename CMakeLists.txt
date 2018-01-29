@@ -101,6 +101,19 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
 install(FILES ${PROJECT_BINARY_DIR}/orb_slam2_export.h
   DESTINATION ${CMAKE_INSTALL_PREFIX}/include/ORB_SLAM2/)
 
+message(STATUS "Compile With map save/load function")
+find_library(BOOST_SERIALIZATION boost_serialization)
+if (NOT BOOST_SERIALIZATION)
+    message(FATAL_ERROR "Can't find libboost_serialization")
+endif()
+target_link_libraries(${PROJECT_NAME} ${BOOST_SERIALIZATION})
+
+if(WIN32)
+    add_definitions(
+        -DBOOST_ALL_NO_LIB
+    )
+endif()
+
 # Build examples
 
 add_executable(rgbd_tum
@@ -123,10 +136,52 @@ add_executable(mono_kitti
 Examples/Monocular/mono_kitti.cc)
 target_link_libraries(mono_kitti ORB_SLAM2)
 
+
+# Build utility
+
+add_executable(bin_vocabulary Vocabulary/bin_vocabulary.cpp)
+
+target_include_directories(bin_vocabulary PUBLIC
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
+    ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
+    ${PROJECT_SOURCE_DIR}/include
+    ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+    ${Pangolin_INCLUDE_DIR}
+    ${PROJECT_BINARY_DIR}
+)
+
+target_link_libraries(bin_vocabulary DBoW2 ${OpenCV_LIBS})
+
+# Convert txt vocabulary to binary
+if(WIN32)
+    add_custom_target(ORBvoc.bin ALL
+        COMMAND ${CMAKE_COMMAND} -E tar "xfz" "ORBvoc.txt.tar.gz"
+        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/Thirdparty/DBoW2/DBoW2.dll ${PROJECT_BINARY_DIR}
+        COMMAND bin_vocabulary
+        SOURCES ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz
+        BYPRODUCTS ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.bin
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/Vocabulary"
+    )
+else()
+    add_custom_target(ORBvoc.bin ALL
+        COMMAND ${CMAKE_COMMAND} -E tar "xfz" "ORBvoc.txt.tar.gz"
+        COMMAND bin_vocabulary
+        SOURCES ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz
+        BYPRODUCTS ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.bin
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/Vocabulary"
+    )
+endif()
+
+# Install samples & utility
+
 install(TARGETS
     rgbd_tum
     stereo_kitti
     mono_tum
     mono_kitti
   RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin )
-
+  
+# Install binary vocabulary file
+install(FILES "${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.bin" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ORB_SLAM2")

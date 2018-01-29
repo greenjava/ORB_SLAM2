@@ -24,7 +24,7 @@ class DBOW2_EXPORT FeatureVector:
   public std::map<NodeId, std::vector<unsigned int> >
 {
 public:
-
+  typedef std::map<NodeId, std::vector<unsigned int> > super;
   /**
    * Constructor
    */

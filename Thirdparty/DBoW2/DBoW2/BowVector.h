@@ -59,7 +59,7 @@ class DBOW2_EXPORT BowVector:
 	public std::map<WordId, WordValue>
 {
 public:
-
+    typedef std::map<WordId, WordValue> super;
 	/** 
 	 * Constructor
 	 */

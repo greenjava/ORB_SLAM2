@@ -41,7 +41,7 @@ class Viewer;
 class ORB_SLAM2_EXPORT FrameDrawer
 {
 public:
-    FrameDrawer(Map* pMap);
+    FrameDrawer(Map* pMap, bool bReuseMap=false);
 
     // Update info from the last processed frame.
     void Update(Tracking *pTracker);

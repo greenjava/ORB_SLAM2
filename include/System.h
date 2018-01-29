@@ -38,6 +38,10 @@
 #include "orb_slam2_export.h"
 #include "Utils.h"
 
+#include "BoostArchiver.h"
+// for map file io
+#include <fstream>
+
 namespace ORB_SLAM2
 {
 
@@ -62,7 +66,7 @@ public:
 public:
 
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true);
+    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true, bool is_save_map_=false);
 
     //Initialize the SLAM system without using settings file. It launches the Local Mapping, Loop Closing and Viewer threads.
     System(ORBVocabulary *voc, const Camera& camParams, const OrbParameters& orbParams,
@@ -146,6 +150,11 @@ public:
     std::vector<cv::KeyPoint> GetTrackedKeyPointsUn();
 
 private:
+    // Save/Load functions
+    void SaveMap(const string &filename);
+    bool LoadMap(const string &filename);
+
+private:
 
     // Input sensor
     eSensor mSensor;
@@ -158,6 +167,9 @@ private:
 
     // Map structure that stores the pointers to all KeyFrames and MapPoints.
     Map* mpMap;
+
+    string mapfile;
+    bool is_save_map;
 
     // Tracker. It receives a frame and computes the associated camera pose.
     // It also decides when to insert a new keyframe, create some new MapPoints and
