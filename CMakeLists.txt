@@ -155,6 +155,7 @@ target_include_directories(bin_vocabulary PUBLIC
 target_link_libraries(bin_vocabulary DBoW2 ${OpenCV_LIBS})
 
 # Convert txt vocabulary to binary
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
 if(WIN32)
     add_custom_target(ORBvoc.bin ALL
         COMMAND ${CMAKE_COMMAND} -E tar "xfz" "ORBvoc.txt.tar.gz"
