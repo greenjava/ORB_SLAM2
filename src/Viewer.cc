@@ -54,9 +54,11 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
 }
 
 Viewer::Viewer(System *pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
-               Tracking *pTracking, const Camera &camParams, const ViewerParameters &viewerParams):
+               Tracking *pTracking, const Camera &camParams, const ViewerParameters &viewerParams,
+               bool bReuseMap):
     mpSystem(pSystem), mpFrameDrawer(pFrameDrawer),mpMapDrawer(pMapDrawer), mpTracker(pTracking),
-    mbFinishRequested(false), mbFinished(true), mbStopped(false), mbStopRequested(false)
+    mbFinishRequested(false), mbFinished(true), mbStopped(false), mbStopRequested(false),
+    mbReuseMap(bReuseMap)
 {
 
     float fps = camParams.m_fps;

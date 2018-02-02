@@ -62,7 +62,7 @@ public:
 
     Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Map* pMap,
              KeyFrameDatabase* pKFDB, const Camera& camParams, const OrbParameters& orbParams,
-             const int sensor);
+             const int sensor, bool bReuseMap = false);
 
     void setOrbParameters(const OrbParameters& orbParams);
 

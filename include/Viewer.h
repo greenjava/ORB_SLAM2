@@ -43,7 +43,7 @@ class ORB_SLAM2_EXPORT Viewer
 {
 public:
     Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking,
-           const Camera& camParams, const ViewerParameters& viewerParams);
+           const Camera& camParams, const ViewerParameters& viewerParams, bool bReuseMap);
 
     Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Tracking *pTracking, const string &strSettingPath, bool mbReuseMap);
 

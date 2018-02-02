@@ -71,7 +71,8 @@ public:
     //Initialize the SLAM system without using settings file. It launches the Local Mapping, Loop Closing and Viewer threads.
     System(ORBVocabulary *voc, const Camera& camParams, const OrbParameters& orbParams,
            const ViewerParameters& viewerParams,
-           const eSensor sensor, const bool bUseViewer = true);
+           const eSensor sensor, const bool bUseViewer = true,
+           const bool saveMap = false, std::string const& mapFile = "");
 
 
     void setCameraParameters(const Camera& camParams);

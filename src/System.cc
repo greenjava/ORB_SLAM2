@@ -141,10 +141,12 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 }
 
 System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters &orbParams,
-               const ViewerParameters &viewerParams, const System::eSensor sensor, const bool bUseViewer):
+               const ViewerParameters &viewerParams, const System::eSensor sensor, const bool bUseViewer,
+               const bool saveMap, std::string const& mapFile):
     mSensor(sensor),
     mpVocabulary(voc),
-    is_save_map(false),
+    is_save_map(saveMap),
+    mapfile(mapFile),
     mpViewer(static_cast<Viewer*>(NULL)),
     mbReset(false),
     mbActivateLocalizationMode(false),
@@ -167,14 +169,20 @@ System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters 
     else if(mSensor==RGBD)
         cout << "RGB-D" << endl;
 
+    bool bReuseMap = false;
     //Create KeyFrame Database
-    mpKeyFrameDatabase = new KeyFrameDatabase(mpVocabulary);
-
-    //Create the Map
-    mpMap = new Map();
+    if (!mapfile.empty() && LoadMap(mapfile))
+    {
+        bReuseMap = true;
+    }
+    else
+    {
+        mpKeyFrameDatabase = new KeyFrameDatabase(mpVocabulary);
+        mpMap = new Map();
+    }
 
     //Create Drawers. These are used by the Viewer
-    mpFrameDrawer = new FrameDrawer(mpMap);
+    mpFrameDrawer = new FrameDrawer(mpMap, bReuseMap);
 
     mpMapDrawer = new MapDrawer(mpMap, viewerParams);
 
@@ -182,7 +190,7 @@ System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters 
     //(it will live in the main thread of execution, the one that called this constructor)
 
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer,
-                             mpMap, mpKeyFrameDatabase, camParams, orbParams, mSensor);
+                             mpMap, mpKeyFrameDatabase, camParams, orbParams, mSensor, bReuseMap);
 
     //Initialize the Local Mapping thread and launch
     mpLocalMapper = new LocalMapping(mpMap, mSensor==MONOCULAR);
@@ -196,7 +204,7 @@ System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters 
     
     if(bUseViewer)
     {
-        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,camParams,viewerParams);
+        mpViewer = new Viewer(this, mpFrameDrawer,mpMapDrawer,mpTracker,camParams,viewerParams, bReuseMap);
         mptViewer = new thread(&Viewer::Run, mpViewer);
         mpTracker->SetViewer(mpViewer);
     }

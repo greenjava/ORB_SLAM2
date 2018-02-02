@@ -152,7 +152,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
 Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer,
                    Map *pMap, KeyFrameDatabase *pKFDB, const Camera &camParams, const OrbParameters &orbParams,
-                   const int sensor):
+                   const int sensor, bool bReuseMap):
     mState(NO_IMAGES_YET), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpORBVocabulary(pVoc),
     mpKeyFrameDB(pKFDB), mpInitializer(static_cast<Initializer*>(NULL)), mpSystem(pSys),
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0)
@@ -253,6 +253,8 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, FrameDrawer *pFrameDrawer,
         else
             mDepthMapFactor = 1.0f/mDepthMapFactor;
     }
+    if (bReuseMap)
+        mState = LOST;
 }
 
 void Tracking::setOrbParameters(const OrbParameters &orbParams)
