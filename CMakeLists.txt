@@ -154,6 +154,7 @@ target_include_directories(bin_vocabulary PUBLIC
 target_link_libraries(bin_vocabulary DBoW2 ${OpenCV_LIBS})
 
 # Install samples & utility
+
 install(TARGETS
     rgbd_tum
     stereo_kitti
@@ -161,16 +162,9 @@ install(TARGETS
     mono_kitti
     bin_vocabulary
     RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-) 
-  
-# Execute bin vocabulary conversion as post install script
-#install(SCRIPT ${CMAKE_SOURCE_DIR}/Vocabulary.cmake)
-set(EXECUTE_COMMAND_TAR ${CMAKE_COMMAND} -E tar xfz ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz)
-set(EXECUTE_COMMAND_VOCABULARY ${CMAKE_INSTALL_PREFIX}/bin/bin_vocabulary)
-set(EXECUTE_COMMAND_MOVE ${CMAKE_COMMAND} -E copy ${CMAKE_INSTALL_PREFIX}/bin/ORBvoc.bin ${CMAKE_INSTALL_PREFIX}/share/ORB_SLAM2/ORBvoc.bin)
-set(EXECUTE_COMMAND_REMOVE ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/ORBvoc.txt ${CMAKE_INSTALL_PREFIX}/bin/ORBvoc.bin)
+)
 
+# Install text vocabulary file
+
+set(EXECUTE_COMMAND_TAR ${CMAKE_COMMAND} -E tar xfz ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz)
 install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_TAR} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
-install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_VOCABULARY} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
-install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_MOVE} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
-install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_REMOVE} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
