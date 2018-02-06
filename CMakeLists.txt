@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.1)
 project(ORB_SLAM2)
 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
@@ -143,46 +145,32 @@ add_executable(bin_vocabulary Vocabulary/bin_vocabulary.cpp)
 
 target_include_directories(bin_vocabulary PUBLIC
     ${PROJECT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
-    ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
     ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
     ${OpenCV_INCLUDE_DIRS}
-    ${EIGEN3_INCLUDE_DIR}
-    ${Pangolin_INCLUDE_DIR}
-    ${PROJECT_BINARY_DIR}
+    ${PROJECT_BINARY_DIR}/Thirdparty/DBoW2
 )
 
 target_link_libraries(bin_vocabulary DBoW2 ${OpenCV_LIBS})
 
-# Convert txt vocabulary to binary
-set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY ON)
-if(WIN32)
-    add_custom_target(ORBvoc.bin ALL
-        COMMAND ${CMAKE_COMMAND} -E tar "xfz" "ORBvoc.txt.tar.gz"
-        COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/Thirdparty/DBoW2/DBoW2.dll ${PROJECT_BINARY_DIR}
-        COMMAND bin_vocabulary
-        SOURCES ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz
-        BYPRODUCTS ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.bin
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/Vocabulary"
-    )
-else()
-    add_custom_target(ORBvoc.bin ALL
-        COMMAND ${CMAKE_COMMAND} -E tar "xfz" "ORBvoc.txt.tar.gz"
-        COMMAND bin_vocabulary
-        SOURCES ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz
-        BYPRODUCTS ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.bin
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/Vocabulary"
-    )
-endif()
-
 # Install samples & utility
-
 install(TARGETS
     rgbd_tum
     stereo_kitti
     mono_tum
     mono_kitti
-  RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin )
+    bin_vocabulary
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+) 
   
-# Install binary vocabulary file
-install(FILES "${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.bin" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ORB_SLAM2")
+# Execute bin vocabulary conversion as post install script
+#install(SCRIPT ${CMAKE_SOURCE_DIR}/Vocabulary.cmake)
+set(EXECUTE_COMMAND_TAR ${CMAKE_COMMAND} -E tar xfz ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz)
+set(EXECUTE_COMMAND_VOCABULARY ${CMAKE_INSTALL_PREFIX}/bin/bin_vocabulary)
+set(EXECUTE_COMMAND_MOVE ${CMAKE_COMMAND} -E copy ${CMAKE_INSTALL_PREFIX}/bin/ORBvoc.bin ${CMAKE_INSTALL_PREFIX}/share/ORB_SLAM2/ORBvoc.bin)
+set(EXECUTE_COMMAND_REMOVE ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/bin/ORBvoc.txt ${CMAKE_INSTALL_PREFIX}/bin/ORBvoc.bin)
+
+install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_TAR} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
+install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_VOCABULARY} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
+install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_MOVE} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
+install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_REMOVE} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
