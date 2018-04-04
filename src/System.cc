@@ -387,14 +387,17 @@ void System::Reset()
 
 void System::Shutdown()
 {
-    mpLocalMapper->RequestFinish();
-    mpLoopCloser->RequestFinish();
-
-    // Wait until all thread have effectively stopped
-    while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
-    {
-        std::this_thread::sleep_for(std::chrono::microseconds(5000));
+    if(mpViewer)
+    {    
+        mpViewer->RequestFinish();
+        mptViewer->join();
     }
+
+    mpLocalMapper->RequestFinish();
+    mptLocalMapping->join();
+        
+    mpLoopCloser->RequestFinish();
+    mptLoopClosing->join();
 
     cout<<"Shutdown the system..."<<endl;
 }
