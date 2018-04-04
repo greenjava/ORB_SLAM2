@@ -36,12 +36,9 @@ static bool has_suffix(const std::string &str, const std::string &suffix)
 namespace ORB_SLAM2
 {
 
-System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, bool is_save_map_):
-    mSensor(sensor),
-    is_save_map(is_save_map_),
-    mbReset(false),
-    mbActivateLocalizationMode(false),
-    mbDeactivateLocalizationMode(false)
+System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
+               const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),
+        mbActivateLocalizationMode(false), mbDeactivateLocalizationMode(false)
 {
     // Output welcome message
     cout << endl <<
@@ -130,7 +127,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 }
 
 System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters &orbParams,
-               const System::eSensor sensor, const bool saveMap, std::string const& mapFile):
+               const ViewerParameters &viewerParams, const System::eSensor sensor, const bool bUseViewer, std::string const& mapFile):
     mSensor(sensor),
     mpVocabulary(voc),
     mapfile(mapFile),
@@ -400,8 +397,6 @@ void System::Shutdown()
     }
 
     cout<<"Shutdown the system..."<<endl;
-    if (is_save_map)
-        SaveMap(mapfile);
 }
 
 void System::SaveTrajectoryTUM(const string &filename)
