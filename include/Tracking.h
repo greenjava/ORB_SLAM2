@@ -61,6 +61,8 @@ public:
              KeyFrameDatabase* pKFDB, const Camera& camParams, const OrbParameters& orbParams,
              const int sensor, bool bReuseMap = false);
 
+    ~Tracking();
+
     void setOrbParameters(const OrbParameters& orbParams);
 
     // Preprocess the input and call Track(). Extract features and performs stereo matching.

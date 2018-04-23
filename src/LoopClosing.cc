@@ -357,6 +357,11 @@ bool LoopClosing::ComputeSim3()
         }
     }
 
+    for(int i=0; i<nInitialCandidates; i++)
+    {
+        delete vpSim3Solvers[i];
+    }
+
     if(!bMatch)
     {
         for(int i=0; i<nInitialCandidates; i++)

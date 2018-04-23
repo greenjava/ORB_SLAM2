@@ -190,6 +190,23 @@ System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters 
 
 }
 
+System::~System()
+{
+    if(mpViewer) delete mptViewer;
+    if(mptLocalMapping != nullptr) delete mptLocalMapping;
+    if(mptLoopClosing != nullptr)  delete mptLoopClosing;
+
+    if(mpLocalMapper != nullptr) delete mpLocalMapper;
+    if(mpLoopCloser != nullptr) delete mpLoopCloser;
+    if(mpViewer != nullptr) delete mpViewer;
+
+    if(mpFrameDrawer != nullptr) delete mpFrameDrawer;
+    if(mpKeyFrameDatabase != nullptr) delete mpKeyFrameDatabase;
+    if(mpTracker != nullptr) delete mpTracker;
+    if(mpMapDrawer != nullptr) delete mpMapDrawer;
+    if(mpMap != nullptr) delete mpMap;
+}
+
 void System::setCameraParameters(const Camera &camParams)
 {
     mpTracker->ChangeCalibration(camParams);
