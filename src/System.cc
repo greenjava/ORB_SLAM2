@@ -192,7 +192,7 @@ System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters 
 
 System::~System()
 {
-    if(mpViewer) delete mptViewer;
+    if(mpViewer != nullptr) delete mptViewer;
     if(mptLocalMapping != nullptr) delete mptLocalMapping;
     if(mptLoopClosing != nullptr)  delete mptLoopClosing;
 
