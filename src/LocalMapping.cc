@@ -692,21 +692,17 @@ cv::Mat LocalMapping::SkewSymmetricMatrix(const cv::Mat &v)
             -v.at<float>(1),  v.at<float>(0),              0);
 }
 
-void LocalMapping::RequestReset()
+void LocalMapping::reset()
 {
+    unique_lock<mutex> lock(mMutexReset);
+    if(!mbResetRequested)
     {
-        unique_lock<mutex> lock(mMutexReset);
         mbResetRequested = true;
-    }
-
-    while(1)
-    {
+        while(mbResetRequested)
         {
-            unique_lock<mutex> lock2(mMutexReset);
-            if(!mbResetRequested)
-                break;
+            mCondReset.wait(lock);
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(3000));
+        cout << "Local Mapping RESET" << endl;
     }
 }
 
@@ -718,6 +714,7 @@ void LocalMapping::ResetIfRequested()
         mlNewKeyFrames.clear();
         mlpRecentAddedMapPoints.clear();
         mbResetRequested=false;
+        mCondReset.notify_all();
     }
 }
 

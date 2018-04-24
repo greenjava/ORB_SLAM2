@@ -60,7 +60,8 @@ public:
 
     void finish();
 
-    void RequestReset();
+    void reset();
+
     bool AcceptKeyFrames();
     void SetAcceptKeyFrames(bool flag);
     bool SetNotStop(bool flag);
@@ -95,6 +96,7 @@ protected:
     bool CheckFinish(); 
     bool mbFinished;
     std::mutex mMutexFinish;
+    std::condition_variable mCondReset;
 
     Map* mpMap;
 

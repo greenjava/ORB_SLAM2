@@ -1662,7 +1662,7 @@ void Tracking::Reset()
 {
     // Reset Local Mapping
     cout << "Reseting Local Mapper..."<<endl;
-    mpLocalMapper->RequestReset();
+    mpLocalMapper->reset();
     cout << " done" << endl;
 
     // Reset Loop Closing
