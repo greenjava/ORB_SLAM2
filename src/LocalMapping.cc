@@ -31,7 +31,7 @@ namespace ORB_SLAM2
 {
 
 LocalMapping::LocalMapping(Map *pMap, const float bMonocular):
-    mbMonocular(bMonocular), mbResetRequested(false), mbFinishRequested(false), mbFinished(true), mpMap(pMap),
+    mbMonocular(bMonocular), mbResetRequested(false), mbFinished(true), mpMap(pMap),
     mbAbortBA(false), mbStopped(false), mbNotStop(false), mbAcceptKeyFrames(true)
 {
 }
@@ -115,8 +115,6 @@ void LocalMapping::Run()
 
         std::this_thread::sleep_for(std::chrono::microseconds(3000));
     }
-
-    SetFinish();
 }
 
 void LocalMapping::InsertKeyFrame(KeyFrame *pKF)
@@ -723,34 +721,20 @@ void LocalMapping::ResetIfRequested()
     }
 }
 
-void LocalMapping::RequestFinish()
+void LocalMapping::finish()
 {
     if(isStopped())
     {
         release();
     }
     unique_lock<mutex> lock(mMutexFinish);
-    mbFinishRequested = true;
-}
-
-bool LocalMapping::CheckFinish()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinishRequested;
-}
-
-void LocalMapping::SetFinish()
-{
-    unique_lock<mutex> lock(mMutexFinish);
     mbFinished = true;
-    unique_lock<mutex> lock2(mMutexStop);
-    mbStopped = true;
 }
 
-bool LocalMapping::isFinished()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinished;
-}
+bool LocalMapping::CheckFinish() 
+{ 
+    unique_lock<mutex> lock(mMutexFinish); 
+    return mbFinished; 
+} 
 
 } //namespace ORB_SLAM

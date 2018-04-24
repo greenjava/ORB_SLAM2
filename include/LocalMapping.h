@@ -58,13 +58,13 @@ public:
     bool stopRequested();
     void release();
 
+    void finish();
+
     void RequestReset();
     bool AcceptKeyFrames();
     void SetAcceptKeyFrames(bool flag);
     bool SetNotStop(bool flag);
     void InterruptBA();
-    void RequestFinish();
-    bool isFinished();
 
     int KeyframesInQueue(){
         unique_lock<std::mutex> lock(mMutexNewKFs);
@@ -92,9 +92,7 @@ protected:
     bool mbResetRequested;
     std::mutex mMutexReset;
 
-    bool CheckFinish();
-    void SetFinish();
-    bool mbFinishRequested;
+    bool CheckFinish(); 
     bool mbFinished;
     std::mutex mMutexFinish;
 

@@ -391,7 +391,7 @@ void System::Shutdown()
         mptViewer->join();
     }
 
-    mpLocalMapper->RequestFinish();
+    mpLocalMapper->finish();
     mptLocalMapping->join();
         
     mpLoopCloser->RequestFinish();
