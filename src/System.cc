@@ -230,21 +230,14 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
         unique_lock<mutex> lock(mMutexMode);
         if(mbActivateLocalizationMode)
         {
-            mpLocalMapper->RequestStop();
-
-            // Wait until Local Mapping has effectively stopped
-            while(!mpLocalMapper->isStopped())
-            {
-                std::this_thread::sleep_for(std::chrono::microseconds(1000));
-            }
-
+            mpLocalMapper->stop();
             mpTracker->InformOnlyTracking(true);
             mbActivateLocalizationMode = false;
         }
         if(mbDeactivateLocalizationMode)
         {
             mpTracker->InformOnlyTracking(false);
-            mpLocalMapper->Release();
+            mpLocalMapper->release();
             mbDeactivateLocalizationMode = false;
         }
     }
@@ -281,13 +274,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
         unique_lock<mutex> lock(mMutexMode);
         if(mbActivateLocalizationMode)
         {
-            mpLocalMapper->RequestStop();
-
-            // Wait until Local Mapping has effectively stopped
-            while(!mpLocalMapper->isStopped())
-            {
-                std::this_thread::sleep_for(std::chrono::microseconds(1000));
-            }
+            mpLocalMapper->stop();
 
             mpTracker->InformOnlyTracking(true);
             mbActivateLocalizationMode = false;
@@ -295,7 +282,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
         if(mbDeactivateLocalizationMode)
         {
             mpTracker->InformOnlyTracking(false);
-            mpLocalMapper->Release();
+            mpLocalMapper->release();
             mbDeactivateLocalizationMode = false;
         }
     }
@@ -332,13 +319,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
         unique_lock<mutex> lock(mMutexMode);
         if(mbActivateLocalizationMode)
         {
-            mpLocalMapper->RequestStop();
-
-            // Wait until Local Mapping has effectively stopped
-            while(!mpLocalMapper->isStopped())
-            {
-                std::this_thread::sleep_for(std::chrono::microseconds(1000));
-            }
+            mpLocalMapper->stop();
 
             mpTracker->InformOnlyTracking(true);
             mbActivateLocalizationMode = false;
@@ -346,7 +327,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
         if(mbDeactivateLocalizationMode)
         {
             mpTracker->InformOnlyTracking(false);
-            mpLocalMapper->Release();
+            mpLocalMapper->release();
             mbDeactivateLocalizationMode = false;
         }
     }

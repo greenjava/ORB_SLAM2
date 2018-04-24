@@ -53,18 +53,16 @@ public:
     void InsertKeyFrame(KeyFrame* pKF);
 
     // Thread Synch
-    void RequestStop();
-    void RequestReset();
-    bool Stop();
-    void Release();
+    void stop();
     bool isStopped();
     bool stopRequested();
+    void release();
+
+    void RequestReset();
     bool AcceptKeyFrames();
     void SetAcceptKeyFrames(bool flag);
     bool SetNotStop(bool flag);
-
     void InterruptBA();
-
     void RequestFinish();
     bool isFinished();
 
@@ -116,9 +114,10 @@ protected:
     bool mbAbortBA;
 
     bool mbStopped;
-    bool mbStopRequested;
     bool mbNotStop;
     std::mutex mMutexStop;
+    std::condition_variable mCondStopRequest;
+    std::condition_variable mCondStop;
 
     bool mbAcceptKeyFrames;
     std::mutex mMutexAccept;
