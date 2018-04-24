@@ -25,8 +25,6 @@
 #include<opencv2/core/core.hpp>
 #include<opencv2/features2d/features2d.hpp>
 
-#include"Viewer.h"
-#include"FrameDrawer.h"
 #include"Map.h"
 #include"LocalMapping.h"
 #include"LoopClosing.h"
@@ -35,7 +33,6 @@
 #include"KeyFrameDatabase.h"
 #include"ORBextractor.h"
 #include "Initializer.h"
-#include "MapDrawer.h"
 #include "System.h"
 #include "orb_slam2_export.h"
 #include "Utils.h"
@@ -57,10 +54,10 @@ class ORB_SLAM2_EXPORT Tracking
 
 public:
 
-    Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Map* pMap,
+    Tracking(System* pSys, ORBVocabulary* pVoc, Map* pMap,
              KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, bool bReuseMap=false);
 
-    Tracking(System* pSys, ORBVocabulary* pVoc, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, Map* pMap,
+    Tracking(System* pSys, ORBVocabulary* pVoc, Map* pMap,
              KeyFrameDatabase* pKFDB, const Camera& camParams, const OrbParameters& orbParams,
              const int sensor, bool bReuseMap = false);
 
@@ -73,7 +70,6 @@ public:
 
     void SetLocalMapper(LocalMapping* pLocalMapper);
     void SetLoopClosing(LoopClosing* pLoopClosing);
-    void SetViewer(Viewer* pViewer);
 
     // Load new settings
     // The focal lenght should be similar or scale prediction will fail when projecting points
@@ -87,7 +83,6 @@ public:
 
     // Use this function if you have deactivated local mapping and you only want to localize the camera.
     void InformOnlyTracking(const bool &flag);
-
 
 public:
 
@@ -186,11 +181,6 @@ protected:
 
     // System
     System* mpSystem;
-
-    //Drawers
-    Viewer* mpViewer;
-    FrameDrawer* mpFrameDrawer;
-    MapDrawer* mpMapDrawer;
 
     //Map
     Map* mpMap;

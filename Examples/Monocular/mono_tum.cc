@@ -48,10 +48,10 @@ int main(int argc, char **argv)
     string strFile = string(argv[3])+"/rgb.txt";
     LoadImages(strFile, vstrImageFilenames, vTimestamps);
 
-    int nImages = vstrImageFilenames.size();
+    size_t nImages = vstrImageFilenames.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true, (bool)atoi(argv[4]));
+    ORB_SLAM2::System SLAM(argv[1], argv[2], ORB_SLAM2::System::MONOCULAR, (bool)atoi(argv[4]));
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat im;
-    for(int ni=0; ni<nImages; ni++)
+    for(size_t ni=0; ni<nImages; ni++)
     {
         // Read image from file
         im = cv::imread(string(argv[3])+"/"+vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);

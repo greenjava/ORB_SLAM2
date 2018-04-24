@@ -90,34 +90,6 @@ struct ORB_SLAM2_EXPORT OrbParameters
 
 };
 
-/**
- * @brief The ViewerParameters struct handle parameters for viewer
- */
-struct ORB_SLAM2_EXPORT ViewerParameters
-{
-    ///Constructor with parameters
-    ViewerParameters(float keyFrameSize = 0.05f, float keyFrameLineWidth = 1.f, float graphLineWidth = 1.f,
-                     float pointSize = 2.f, float cameraSize = 0.15f, float cameraLineWidth = 2.f,
-                     float viewpointX = 0.f, float viewpointY = -10.f, float viewpointZ = -0.1f,
-                     float viewpointF = 2000.f):
-        m_keyFrameSize(keyFrameSize),m_keyFrameLineWidth(keyFrameLineWidth),m_graphLineWidth(graphLineWidth),
-        m_pointSize(pointSize), m_cameraSize(cameraSize), m_cameraLineWidth(cameraLineWidth),
-        m_viewpointX(viewpointX), m_viewpointY(viewpointY), m_viewpointZ(viewpointZ), m_viewpointF(viewpointF)
-    {
-    }
-
-    float m_keyFrameSize;
-    float m_keyFrameLineWidth;
-    float m_graphLineWidth;
-    float m_pointSize;
-    float m_cameraSize;
-    float m_cameraLineWidth;
-    float m_viewpointX;
-    float m_viewpointY;
-    float m_viewpointZ;
-    float m_viewpointF;
-};
-
 }//namespace ORB_SLAM2
 
 #endif //UTILS_H

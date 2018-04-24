@@ -42,7 +42,6 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(Pangolin REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 
@@ -58,19 +57,16 @@ add_library(ORB_SLAM2 SHARED
     src/LoopClosing.cc
     src/ORBextractor.cc
     src/ORBmatcher.cc
-    src/FrameDrawer.cc
     src/Converter.cc
     src/MapPoint.cc
     src/KeyFrame.cc
     src/Map.cc
-    src/MapDrawer.cc
     src/Optimizer.cc
     src/PnPsolver.cc
     src/Frame.cc
     src/KeyFrameDatabase.cc
     src/Sim3Solver.cc
     src/Initializer.cc
-    src/Viewer.cc
 )
 
 target_include_directories(ORB_SLAM2 PUBLIC

@@ -23,7 +23,7 @@
 #include "KeyFrame.h"
 #include <DBoW2/BowVector.h>
 
-#include<mutex>
+#include <mutex>
 
 using namespace std;
 
