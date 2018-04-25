@@ -63,7 +63,7 @@ public:
 
     void InsertKeyFrame(KeyFrame *pKF);
 
-    void RequestReset();
+    void reset();
 
     // This function will run in a separate thread
     void RunGlobalBundleAdjustment(unsigned long nLoopKF);
@@ -98,6 +98,7 @@ protected:
     void ResetIfRequested();
     bool mbResetRequested;
     std::mutex mMutexReset;
+    std::condition_variable mCondReset;
 
     bool CheckFinish();
     void SetFinish();

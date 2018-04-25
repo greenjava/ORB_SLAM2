@@ -92,11 +92,11 @@ protected:
     void ResetIfRequested();
     bool mbResetRequested;
     std::mutex mMutexReset;
+    std::condition_variable mCondReset;
 
     bool CheckFinish(); 
     bool mbFinished;
     std::mutex mMutexFinish;
-    std::condition_variable mCondReset;
 
     Map* mpMap;
 

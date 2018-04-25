@@ -628,21 +628,17 @@ void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
 }
 
 
-void LoopClosing::RequestReset()
+void LoopClosing::reset()
 {
+    unique_lock<mutex> lock(mMutexReset);
+    if(!mbResetRequested)
     {
-        unique_lock<mutex> lock(mMutexReset);
         mbResetRequested = true;
-    }
-
-    while(1)
-    {
+        while(mbResetRequested)
         {
-        unique_lock<mutex> lock2(mMutexReset);
-        if(!mbResetRequested)
-            break;
+            mCondReset.wait(lock);
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(5000));
+        cout << "Loop Cloosing RESET" << endl;
     }
 }
 
@@ -654,6 +650,7 @@ void LoopClosing::ResetIfRequested()
         mlpLoopKeyFrameQueue.clear();
         mLastLoopKFid=0;
         mbResetRequested=false;
+        mCondReset.notify_all();
     }
 }
 
