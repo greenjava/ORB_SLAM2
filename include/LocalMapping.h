@@ -114,6 +114,7 @@ protected:
 
     bool mbStopped;
     bool mbNotStop;
+    int mStopRequest;
     std::mutex mMutexStop;
     std::condition_variable mCondStopRequest;
     std::condition_variable mCondStop;

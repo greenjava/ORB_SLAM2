@@ -608,19 +608,26 @@ vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
 
 void System::SaveMap(const string &filename)
 {
-    std::ofstream out(filename, std::ios_base::binary);
-    if (!out)
+    mpLoopCloser->stop();
+    mpLocalMapper->stop();
     {
-        cerr << "Cannot Write to Mapfile: " << mapfile << std::endl;
-        exit(-1);
+        std::ofstream out(filename, std::ios_base::binary);
+        if (!out)
+        {
+            cerr << "Cannot Write to Mapfile: " << mapfile << std::endl;
+            exit(-1);
+        }
+        cout << "Saving Mapfile: " << mapfile << std::flush;
+        boost::archive::binary_oarchive oa(out, boost::archive::no_header);
+        oa << mpMap;
+        oa << mpKeyFrameDatabase;
+        cout << " ...done" << std::endl;
+        out.close();
     }
-    cout << "Saving Mapfile: " << mapfile << std::flush;
-    boost::archive::binary_oarchive oa(out, boost::archive::no_header);
-    oa << mpMap;
-    oa << mpKeyFrameDatabase;
-    cout << " ...done" << std::endl;
-    out.close();
+    mpLocalMapper->release();
+    mpLoopCloser->release();
 }
+
 bool System::LoadMap(const string &filename)
 {
     std::ifstream in(filename, std::ios_base::binary);

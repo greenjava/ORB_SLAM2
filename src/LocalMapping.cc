@@ -31,8 +31,15 @@ namespace ORB_SLAM2
 {
 
 LocalMapping::LocalMapping(Map *pMap, const float bMonocular):
-    mbMonocular(bMonocular), mbResetRequested(false), mbFinished(true), mpMap(pMap),
-    mbAbortBA(false), mbStopped(false), mbNotStop(false), mbAcceptKeyFrames(true)
+    mbMonocular(bMonocular),
+    mbResetRequested(false),
+    mbFinished(true),
+    mpMap(pMap),
+    mbAbortBA(false),
+    mbStopped(false),
+    mbNotStop(false),
+    mbAcceptKeyFrames(true),
+    mStopRequest(0)
 {
 }
 
@@ -561,12 +568,15 @@ cv::Mat LocalMapping::ComputeF12(KeyFrame *&pKF1, KeyFrame *&pKF2)
 void LocalMapping::stop()
 {
     unique_lock<mutex> lock(mMutexStop);
-    mbStopped = true;
-    {
-        unique_lock<mutex> lock2(mMutexNewKFs);
-        mbAbortBA = true;
+    if(!mbStopped){
+        mbStopped = true;
+        {
+            unique_lock<mutex> lock2(mMutexNewKFs);
+            mbAbortBA = true;
+        }
+        mCondStopRequest.wait(lock);
     }
-    mCondStopRequest.wait(lock);
+    ++mStopRequest;
     cout << "Local Mapping STOP" << endl;
 }
 
@@ -579,15 +589,21 @@ bool LocalMapping::isStopped()
 void LocalMapping::release()
 {
     unique_lock<mutex> lock(mMutexStop);
-    unique_lock<mutex> lock2(mMutexFinish);
-    if(mbFinished)
-        return;
-    mbStopped = false;
-    for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
-        delete *lit;
-    mlNewKeyFrames.clear();
-    mCondStop.notify_all();
-    cout << "Local Mapping RELEASE" << endl;
+    --mStopRequest;
+    {
+        unique_lock<mutex> lock2(mMutexFinish);
+        if(mbFinished)
+            return;
+    }
+    if(mStopRequest == 0)
+    {
+        mbStopped = false;
+        for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
+            delete *lit;
+        mlNewKeyFrames.clear();
+        mCondStop.notify_all();
+        cout << "Local Mapping RELEASE" << endl;
+    }
 }
 
 bool LocalMapping::AcceptKeyFrames()

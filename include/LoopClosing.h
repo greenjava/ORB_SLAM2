@@ -65,6 +65,9 @@ public:
 
     void reset();
 
+    void stop();
+    void release();
+
     // This function will run in a separate thread 
     void RunGlobalBundleAdjustment(unsigned long nLoopKF);
 
@@ -101,6 +104,12 @@ protected:
         unique_lock<std::mutex> lock(mMutexGBA); 
         return mbFinishedGBA; 
     }
+
+    bool isStopped();
+    bool mbStopped;
+    std::mutex mMutexStop;
+    std::condition_variable mCondStopRequest;
+    std::condition_variable mCondStop;
 
     Map* mpMap;
     Tracking* mpTracker;

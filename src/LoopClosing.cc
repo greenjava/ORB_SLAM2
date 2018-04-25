@@ -88,6 +88,31 @@ void LoopClosing::Run()
 
         ResetIfRequested();
 
+        {
+            unique_lock<mutex> lock(mMutexStop); 
+            if(mbStopped) 
+            {
+                if(isRunningGBA())
+                {
+                    unique_lock<mutex> lock(mMutexGBA);
+                    mbStopGBA = true;
+
+                    mnFullBAIdx++;
+
+                    if(mpThreadGBA)
+                    {
+                        mpThreadGBA->join();
+                        delete mpThreadGBA;
+                    }
+                }
+                mCondStopRequest.notify_all();
+                while(mbStopped)
+                {
+                    mCondStop.wait(lock);
+                }
+            }
+        }
+        
         if(CheckFinish())
             break;
 
@@ -640,6 +665,28 @@ void LoopClosing::reset()
     }
 }
 
+void LoopClosing::stop()
+{
+    unique_lock<mutex> lock(mMutexStop);
+    mbStopped = true;
+    mCondStopRequest.wait(lock);
+    cout << "Loop Closing STOP" << endl;
+}
+
+bool LoopClosing::isStopped()
+{
+    unique_lock<mutex> lock(mMutexStop); 
+    return mbStopped; 
+}
+
+void LoopClosing::release()
+{
+    unique_lock<mutex> lock(mMutexStop);
+    mbStopped = false;
+    mCondStop.notify_all();
+    cout << "Loop Closing RELEASE" << endl;
+}
+
 void LoopClosing::ResetIfRequested()
 {
     unique_lock<mutex> lock(mMutexReset);
@@ -754,6 +801,10 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
 
 void LoopClosing::finish()
 {
+    if(isStopped())
+    {
+        release();
+    }
     unique_lock<mutex> lock(mMutexFinish);
     mbFinished = true;
 }
