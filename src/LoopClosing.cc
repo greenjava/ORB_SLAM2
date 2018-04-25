@@ -37,7 +37,6 @@ namespace ORB_SLAM2
 
 LoopClosing::LoopClosing(Map *pMap, KeyFrameDatabase *pDB, ORBVocabulary *pVoc, const bool bFixScale):
     mbResetRequested(false),
-    mbFinishRequested(false),
     mbFinished(true),
     mpMap(pMap),
     mpKeyFrameDB(pDB),
@@ -100,7 +99,6 @@ void LoopClosing::Run()
         mpThreadGBA->join();
         delete mpThreadGBA;
     }
-    SetFinish();
 }
 
 void LoopClosing::InsertKeyFrame(KeyFrame *pKF)
@@ -754,29 +752,17 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
     }
 }
 
-void LoopClosing::RequestFinish()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    mbFinishRequested = true;
-}
-
-bool LoopClosing::CheckFinish()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinishRequested;
-}
-
-void LoopClosing::SetFinish()
+void LoopClosing::finish()
 {
     unique_lock<mutex> lock(mMutexFinish);
     mbFinished = true;
 }
 
-bool LoopClosing::isFinished()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinished;
-}
+bool LoopClosing::CheckFinish() 
+{ 
+    unique_lock<mutex> lock(mMutexFinish); 
+    return mbFinished; 
+} 
 
 
 } //namespace ORB_SLAM

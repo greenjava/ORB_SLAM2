@@ -394,7 +394,7 @@ void System::Shutdown()
     mpLocalMapper->finish();
     mptLocalMapping->join();
         
-    mpLoopCloser->RequestFinish();
+    mpLoopCloser->finish();
     mptLoopClosing->join();
 
     cout<<"Shutdown the system..."<<endl;

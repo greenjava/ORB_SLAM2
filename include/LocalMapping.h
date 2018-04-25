@@ -55,7 +55,6 @@ public:
     // Thread Synch
     void stop();
     bool isStopped();
-    bool stopRequested();
     void release();
 
     void finish();
