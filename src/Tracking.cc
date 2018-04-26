@@ -43,18 +43,14 @@ using namespace std;
 namespace ORB_SLAM2
 {
 
-Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, bool bReuseMap):
+Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, Map *pMap, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, bool bReuseMap):
     mState(NO_IMAGES_YET),
-    mSensor(sensor),
     mbOnlyTracking(false),
     mbVO(false),
     mpORBVocabulary(pVoc),
     mpKeyFrameDB(pKFDB),
     mpInitializer(static_cast<Initializer*>(nullptr)),
     mpSystem(pSys),
-    mpViewer(nullptr),
-    mpFrameDrawer(pFrameDrawer),
-    mpMapDrawer(pMapDrawer),
     mpMap(pMap),
     mnLastRelocFrameId(0),
     mpORBextractorLeft(nullptr),
@@ -173,9 +169,6 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, Map *pMap, KeyFrameDatabas
     mpKeyFrameDB(pKFDB),
     mpInitializer(static_cast<Initializer*>(nullptr)),
     mpSystem(pSys),
-    mpViewer(nullptr),
-    mpFrameDrawer(pFrameDrawer),
-    mpMapDrawer(pMapDrawer),
     mpMap(pMap),
     mnLastRelocFrameId(0),
     mpORBextractorLeft(nullptr),
@@ -1661,12 +1654,12 @@ bool Tracking::Relocalization()
 void Tracking::Reset()
 {
     // Reset Local Mapping
-    cout << "Reseting Local Mapper..."<<endl;
+    cout << "Reseting Local Mapper..." << endl;
     mpLocalMapper->reset();
     cout << " done" << endl;
 
     // Reset Loop Closing
-    cout << "Reseting Loop Closing...";
+    cout << "Reseting Loop Closing..." << endl;
     mpLoopClosing->reset();
     cout << " done" << endl;
 

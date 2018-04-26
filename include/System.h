@@ -63,10 +63,10 @@ public:
 public:
 
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true);
+    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor);
 
     //Initialize the SLAM system without using settings file. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(ORBVocabulary *voc, const Camera& camParams, const OrbParameters& orbParams, const ViewerParameters& viewerParams, const eSensor sensor, const bool bUseViewer = true, std::string const& mapFile = "");
+    System(ORBVocabulary *voc, const Camera& camParams, const OrbParameters& orbParams, const eSensor sensor, std::string const& mapFile = "");
 
     ~System();
 

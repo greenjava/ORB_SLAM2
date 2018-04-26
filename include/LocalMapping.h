@@ -29,7 +29,7 @@
 #include "orb_slam2_export.h"
 
 #include <mutex>
-
+#include <condition_variable>
 
 namespace ORB_SLAM2
 {

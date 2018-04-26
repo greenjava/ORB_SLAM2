@@ -36,9 +36,11 @@ static bool has_suffix(const std::string &str, const std::string &suffix)
 namespace ORB_SLAM2
 {
 
-System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
-               const bool bUseViewer):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),
-        mbActivateLocalizationMode(false), mbDeactivateLocalizationMode(false)
+System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor)
+    :   mSensor(sensor),
+        mbReset(false),
+        mbActivateLocalizationMode(false),
+        mbDeactivateLocalizationMode(false)
 {
     // Output welcome message
     cout << endl <<
@@ -127,11 +129,10 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 }
 
 System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters &orbParams,
-               const ViewerParameters &viewerParams, const System::eSensor sensor, const bool bUseViewer, std::string const& mapFile):
+               const System::eSensor sensor, std::string const& mapFile):
     mSensor(sensor),
     mpVocabulary(voc),
     mapfile(mapFile),
-    is_save_map(saveMap),
     mbReset(false),
     mbActivateLocalizationMode(false),
     mbDeactivateLocalizationMode(false)
@@ -192,18 +193,14 @@ System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters 
 
 System::~System()
 {
-    if(mpViewer != nullptr) delete mptViewer;
     if(mptLocalMapping != nullptr) delete mptLocalMapping;
     if(mptLoopClosing != nullptr)  delete mptLoopClosing;
 
     if(mpLocalMapper != nullptr) delete mpLocalMapper;
     if(mpLoopCloser != nullptr) delete mpLoopCloser;
-    if(mpViewer != nullptr) delete mpViewer;
 
-    if(mpFrameDrawer != nullptr) delete mpFrameDrawer;
     if(mpKeyFrameDatabase != nullptr) delete mpKeyFrameDatabase;
     if(mpTracker != nullptr) delete mpTracker;
-    if(mpMapDrawer != nullptr) delete mpMapDrawer;
     if(mpMap != nullptr) delete mpMap;
 }
 
@@ -385,12 +382,6 @@ void System::Reset()
 
 void System::Shutdown()
 {
-    if(mpViewer)
-    {    
-        mpViewer->RequestFinish();
-        mptViewer->join();
-    }
-
     mpLocalMapper->finish();
     mptLocalMapping->join();
         
