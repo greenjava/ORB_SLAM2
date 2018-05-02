@@ -65,8 +65,16 @@ namespace ORB_SLAM2
 
 
 PnPsolver::PnPsolver(const Frame &F, const vector<MapPoint*> &vpMapPointMatches):
-    pws(0), us(0), alphas(0), pcs(0), maximum_number_of_correspondences(0), number_of_correspondences(0), mnInliersi(0),
-    mnIterations(0), mnBestInliers(0), N(0)
+    pws(nullptr),
+    us(nullptr),
+    alphas(nullptr),
+    pcs(nullptr),
+    maximum_number_of_correspondences(0),
+    number_of_correspondences(0),
+    mnInliersi(0),
+    mnIterations(0),
+    mnBestInliers(0),
+    N(0)
 {
     mvpMapPointMatches = vpMapPointMatches;
     mvP2D.reserve(F.mvpMapPoints.size());

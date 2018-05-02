@@ -42,7 +42,6 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
-find_package(Pangolin REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.1.0 REQUIRED)
 
@@ -52,44 +51,39 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/)
 add_subdirectory(${PROJECT_SOURCE_DIR}/Thirdparty/g2o/)
 
 add_library(ORB_SLAM2 SHARED
-src/System.cc
-src/Tracking.cc
-src/LocalMapping.cc
-src/LoopClosing.cc
-src/ORBextractor.cc
-src/ORBmatcher.cc
-src/FrameDrawer.cc
-src/Converter.cc
-src/MapPoint.cc
-src/KeyFrame.cc
-src/Map.cc
-src/MapDrawer.cc
-src/Optimizer.cc
-src/PnPsolver.cc
-src/Frame.cc
-src/KeyFrameDatabase.cc
-src/Sim3Solver.cc
-src/Initializer.cc
-src/Viewer.cc
+    src/System.cc
+    src/Tracking.cc
+    src/LocalMapping.cc
+    src/LoopClosing.cc
+    src/ORBextractor.cc
+    src/ORBmatcher.cc
+    src/Converter.cc
+    src/MapPoint.cc
+    src/KeyFrame.cc
+    src/Map.cc
+    src/Optimizer.cc
+    src/PnPsolver.cc
+    src/Frame.cc
+    src/KeyFrameDatabase.cc
+    src/Sim3Solver.cc
+    src/Initializer.cc
 )
 
 target_include_directories(ORB_SLAM2 PUBLIC
-${PROJECT_SOURCE_DIR}
-${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
-${PROJECT_SOURCE_DIR}/Thirdparty/g2o
-${PROJECT_SOURCE_DIR}/include
-${OpenCV_INCLUDE_DIRS}
-${EIGEN3_INCLUDE_DIR}
-${Pangolin_INCLUDE_DIR}
-${PROJECT_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
+    ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
+    ${PROJECT_SOURCE_DIR}/include
+    ${OpenCV_INCLUDE_DIRS}
+    ${EIGEN3_INCLUDE_DIR}
+    ${PROJECT_BINARY_DIR}
 )
 
 target_link_libraries(ORB_SLAM2
-${OpenCV_LIBS}
-${EIGEN3_LIBS}
-${Pangolin_LIBRARIES}
-DBoW2
-g2o
+    ${OpenCV_LIBS}
+    ${EIGEN3_LIBS}
+    DBoW2
+    g2o
 )
 
 include(GenerateExportHeader)
@@ -121,54 +115,55 @@ if(WIN32)
 endif()
 
 # Build examples
+option(BUILD_EXAMPLES "Build ORB_SLAM2 examples." OFF)
+if(BUILD_EXAMPLES)
+    add_executable(rgbd_tum
+    Examples/RGB-D/rgbd_tum.cc)
+    target_link_libraries(rgbd_tum ORB_SLAM2)
 
-add_executable(rgbd_tum
-Examples/RGB-D/rgbd_tum.cc)
-target_link_libraries(rgbd_tum ORB_SLAM2)
+    add_executable(stereo_kitti
+    Examples/Stereo/stereo_kitti.cc)
+    target_link_libraries(stereo_kitti ORB_SLAM2)
 
-add_executable(stereo_kitti
-Examples/Stereo/stereo_kitti.cc)
-target_link_libraries(stereo_kitti ORB_SLAM2)
+    add_executable(stereo_euroc
+    Examples/Stereo/stereo_euroc.cc)
+    target_link_libraries(stereo_euroc ${PROJECT_NAME})
 
-add_executable(stereo_euroc
-Examples/Stereo/stereo_euroc.cc)
-target_link_libraries(stereo_euroc ${PROJECT_NAME})
+    add_executable(mono_tum
+    Examples/Monocular/mono_tum.cc)
+    target_link_libraries(mono_tum ORB_SLAM2)
 
-add_executable(mono_tum
-Examples/Monocular/mono_tum.cc)
-target_link_libraries(mono_tum ORB_SLAM2)
+    add_executable(mono_kitti
+    Examples/Monocular/mono_kitti.cc)
+    target_link_libraries(mono_kitti ORB_SLAM2)
 
-add_executable(mono_kitti
-Examples/Monocular/mono_kitti.cc)
-target_link_libraries(mono_kitti ORB_SLAM2)
-
+    # Install examples
+    install(TARGETS
+        rgbd_tum
+        stereo_kitti
+        mono_tum
+        mono_kitti
+        RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    )
+endif()
 
 # Build utility
+option(BUILD_UTILITY "Build ORB_SLAM2 utility." OFF)
+if(BUILD_UTILITY)
+    add_executable(bin_vocabulary Vocabulary/bin_vocabulary.cpp)
 
-add_executable(bin_vocabulary Vocabulary/bin_vocabulary.cpp)
-
-target_include_directories(bin_vocabulary PUBLIC
-    ${PROJECT_SOURCE_DIR}
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
-    ${OpenCV_INCLUDE_DIRS}
-    ${PROJECT_BINARY_DIR}/Thirdparty/DBoW2
-)
-
-target_link_libraries(bin_vocabulary DBoW2 ${OpenCV_LIBS})
-
-# Install samples & utility
-
-install(TARGETS
-    rgbd_tum
-    stereo_kitti
-    mono_tum
-    mono_kitti
-    bin_vocabulary
-    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
-)
+    target_include_directories(bin_vocabulary PUBLIC
+        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_SOURCE_DIR}/include
+        ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
+        ${OpenCV_INCLUDE_DIRS}
+        ${PROJECT_BINARY_DIR}/Thirdparty/DBoW2
+    )
+    target_link_libraries(bin_vocabulary DBoW2 ${OpenCV_LIBS})
+    # Install utility
+    install(TARGETS bin_vocabulary RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+endif()
 
 # Install text vocabulary file
-
 set(EXECUTE_COMMAND_TAR ${CMAKE_COMMAND} -E tar xfz ${PROJECT_SOURCE_DIR}/Vocabulary/ORBvoc.txt.tar.gz)
 install(CODE "execute_process(COMMAND ${EXECUTE_COMMAND_TAR} WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin)")
