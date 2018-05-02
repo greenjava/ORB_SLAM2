@@ -76,14 +76,12 @@ target_include_directories(ORB_SLAM2 PUBLIC
     ${PROJECT_SOURCE_DIR}/include
     ${OpenCV_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
-    ${Pangolin_INCLUDE_DIR}
     ${PROJECT_BINARY_DIR}
 )
 
 target_link_libraries(ORB_SLAM2
     ${OpenCV_LIBS}
     ${EIGEN3_LIBS}
-    ${Pangolin_LIBRARIES}
     DBoW2
     g2o
 )
