@@ -143,6 +143,10 @@ private:
     // Save/Load functions
     bool LoadMap(const string &filename);
 
+    void beforeTracking();
+
+    void afterTracking();
+
 private:
 
     // Input sensor
