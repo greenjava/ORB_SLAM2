@@ -37,7 +37,6 @@ namespace ORB_SLAM2
 
 LoopClosing::LoopClosing(Map *pMap, KeyFrameDatabase *pDB, ORBVocabulary *pVoc, const bool bFixScale):
     mbResetRequested(false),
-    mbFinishRequested(false),
     mbFinished(true),
     mpMap(pMap),
     mpKeyFrameDB(pDB),
@@ -89,13 +88,42 @@ void LoopClosing::Run()
 
         ResetIfRequested();
 
+        {
+            unique_lock<mutex> lock(mMutexStop); 
+            if(mbStopped) 
+            {
+                if(isRunningGBA())
+                {
+                    unique_lock<mutex> lock(mMutexGBA);
+                    mbStopGBA = true;
+
+                    mnFullBAIdx++;
+
+                    if(mpThreadGBA)
+                    {
+                        mpThreadGBA->join();
+                        delete mpThreadGBA;
+                    }
+                }
+                mCondStopRequest.notify_all();
+                while(mbStopped)
+                {
+                    mCondStop.wait(lock);
+                }
+            }
+        }
+        
         if(CheckFinish())
             break;
 
         std::this_thread::sleep_for(std::chrono::microseconds(5000));
     }
 
-    SetFinish();
+    if(mpThreadGBA)
+    {
+        mpThreadGBA->join();
+        delete mpThreadGBA;
+    }
 }
 
 void LoopClosing::InsertKeyFrame(KeyFrame *pKF)
@@ -352,6 +380,11 @@ bool LoopClosing::ComputeSim3()
         }
     }
 
+    for(int i=0; i<nInitialCandidates; i++)
+    {
+        delete vpSim3Solvers[i];
+    }
+
     if(!bMatch)
     {
         for(int i=0; i<nInitialCandidates; i++)
@@ -414,10 +447,6 @@ void LoopClosing::CorrectLoop()
 {
     cout << "Loop detected!" << endl;
 
-    // Send a stop signal to Local Mapping
-    // Avoid new keyframes are inserted while correcting the loop
-    mpLocalMapper->RequestStop();
-
     // If a Global Bundle Adjustment is running, abort it
     if(isRunningGBA())
     {
@@ -433,11 +462,9 @@ void LoopClosing::CorrectLoop()
         }
     }
 
-    // Wait until Local Mapping has effectively stopped
-    while(!mpLocalMapper->isStopped())
-    {
-        std::this_thread::sleep_for(std::chrono::microseconds(1000));
-    }
+    // Send a stop signal to Local Mapping
+    // Avoid new keyframes are inserted while correcting the loop
+    mpLocalMapper->stop();
 
     // Ensure current keyframe is updated
     mpCurrentKF->UpdateConnections();
@@ -590,7 +617,7 @@ void LoopClosing::CorrectLoop()
     mpThreadGBA = new thread(&LoopClosing::RunGlobalBundleAdjustment,this,mpCurrentKF->mnId);
 
     // Loop closed. Release Local Mapping.
-    mpLocalMapper->Release();    
+    mpLocalMapper->release();    
 
     mLastLoopKFid = mpCurrentKF->mnId;   
 }
@@ -624,22 +651,40 @@ void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
 }
 
 
-void LoopClosing::RequestReset()
+void LoopClosing::reset()
 {
+    unique_lock<mutex> lock(mMutexReset);
+    if(!mbResetRequested)
     {
-        unique_lock<mutex> lock(mMutexReset);
         mbResetRequested = true;
-    }
-
-    while(1)
-    {
+        while(mbResetRequested)
         {
-        unique_lock<mutex> lock2(mMutexReset);
-        if(!mbResetRequested)
-            break;
+            mCondReset.wait(lock);
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(5000));
+        cout << "Loop Cloosing RESET" << endl;
     }
+}
+
+void LoopClosing::stop()
+{
+    unique_lock<mutex> lock(mMutexStop);
+    mbStopped = true;
+    mCondStopRequest.wait(lock);
+    cout << "Loop Closing STOP" << endl;
+}
+
+bool LoopClosing::isStopped()
+{
+    unique_lock<mutex> lock(mMutexStop); 
+    return mbStopped; 
+}
+
+void LoopClosing::release()
+{
+    unique_lock<mutex> lock(mMutexStop);
+    mbStopped = false;
+    mCondStop.notify_all();
+    cout << "Loop Closing RELEASE" << endl;
 }
 
 void LoopClosing::ResetIfRequested()
@@ -650,6 +695,7 @@ void LoopClosing::ResetIfRequested()
         mlpLoopKeyFrameQueue.clear();
         mLastLoopKFid=0;
         mbResetRequested=false;
+        mCondReset.notify_all();
     }
 }
 
@@ -673,13 +719,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
         {
             cout << "Global Bundle Adjustment finished" << endl;
             cout << "Updating map ..." << endl;
-            mpLocalMapper->RequestStop();
-            // Wait until Local Mapping has effectively stopped
-
-            while(!mpLocalMapper->isStopped() && !mpLocalMapper->isFinished())
-            {
-                std::this_thread::sleep_for(std::chrono::microseconds(1000));
-            }
+            mpLocalMapper->stop();
 
             // Get Map Mutex
             unique_lock<mutex> lock(mpMap->mMutexMapUpdate);
@@ -749,7 +789,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
 
             mpMap->InformNewBigChange();
 
-            mpLocalMapper->Release();
+            mpLocalMapper->release();
 
             cout << "Map updated!" << endl;
         }
@@ -759,29 +799,21 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
     }
 }
 
-void LoopClosing::RequestFinish()
+void LoopClosing::finish()
 {
-    unique_lock<mutex> lock(mMutexFinish);
-    mbFinishRequested = true;
-}
-
-bool LoopClosing::CheckFinish()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinishRequested;
-}
-
-void LoopClosing::SetFinish()
-{
+    if(isStopped())
+    {
+        release();
+    }
     unique_lock<mutex> lock(mMutexFinish);
     mbFinished = true;
 }
 
-bool LoopClosing::isFinished()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinished;
-}
+bool LoopClosing::CheckFinish() 
+{ 
+    unique_lock<mutex> lock(mMutexFinish); 
+    return mbFinished; 
+} 
 
 
 } //namespace ORB_SLAM

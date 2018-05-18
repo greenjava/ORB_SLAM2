@@ -33,14 +33,13 @@ namespace ORB_SLAM2
 LocalMapping::LocalMapping(Map *pMap, const float bMonocular):
     mbMonocular(bMonocular),
     mbResetRequested(false),
-    mbFinishRequested(false),
     mbFinished(true),
     mpMap(pMap),
     mbAbortBA(false),
     mbStopped(false),
-    mbStopRequested(false),
     mbNotStop(false),
-    mbAcceptKeyFrames(true)
+    mbAcceptKeyFrames(true),
+    mStopRequest(0)
 {
 }
 
@@ -84,7 +83,7 @@ void LocalMapping::Run()
 
             mbAbortBA = false;
 
-            if(!CheckNewKeyFrames() && !stopRequested())
+            if(!CheckNewKeyFrames() && !isStopped())
             {
                 // Local BA
                 if(mpMap->KeyFramesInMap()>2)
@@ -96,15 +95,21 @@ void LocalMapping::Run()
 
             mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
         }
-        else if(Stop())
+        else 
         {
-            // Safe area to stop
-            while(isStopped() && !CheckFinish())
+            unique_lock<mutex> lock(mMutexStop); 
+            if(mbStopped) 
             {
-                std::this_thread::sleep_for(std::chrono::microseconds(3000));
+                mCondStopRequest.notify_all();
+                while(mbStopped && !mbNotStop)
+                {
+                    mCondStop.wait(lock);
+                }
+                if(CheckFinish())
+                {
+                    break;
+                }
             }
-            if(CheckFinish())
-                break;
         }
 
         ResetIfRequested();
@@ -117,8 +122,6 @@ void LocalMapping::Run()
 
         std::this_thread::sleep_for(std::chrono::microseconds(3000));
     }
-
-    SetFinish();
 }
 
 void LocalMapping::InsertKeyFrame(KeyFrame *pKF)
@@ -562,52 +565,45 @@ cv::Mat LocalMapping::ComputeF12(KeyFrame *&pKF1, KeyFrame *&pKF2)
     return K1.t().inv()*t12x*R12*K2.inv();
 }
 
-void LocalMapping::RequestStop()
+void LocalMapping::stop()
 {
     unique_lock<mutex> lock(mMutexStop);
-    mbStopRequested = true;
-    unique_lock<mutex> lock2(mMutexNewKFs);
-    mbAbortBA = true;
-}
-
-bool LocalMapping::Stop()
-{
-    unique_lock<mutex> lock(mMutexStop);
-    if(mbStopRequested && !mbNotStop)
-    {
+    if(!mbStopped){
         mbStopped = true;
-        cout << "Local Mapping STOP" << endl;
-        return true;
+        {
+            unique_lock<mutex> lock2(mMutexNewKFs);
+            mbAbortBA = true;
+        }
+        mCondStopRequest.wait(lock);
     }
-
-    return false;
+    ++mStopRequest;
+    cout << "Local Mapping STOP" << endl;
 }
 
 bool LocalMapping::isStopped()
 {
-    unique_lock<mutex> lock(mMutexStop);
-    return mbStopped;
+    unique_lock<mutex> lock(mMutexStop); 
+    return mbStopped; 
 }
 
-bool LocalMapping::stopRequested()
+void LocalMapping::release()
 {
     unique_lock<mutex> lock(mMutexStop);
-    return mbStopRequested;
-}
-
-void LocalMapping::Release()
-{
-    unique_lock<mutex> lock(mMutexStop);
-    unique_lock<mutex> lock2(mMutexFinish);
-    if(mbFinished)
-        return;
-    mbStopped = false;
-    mbStopRequested = false;
-    for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
-        delete *lit;
-    mlNewKeyFrames.clear();
-
-    cout << "Local Mapping RELEASE" << endl;
+    --mStopRequest;
+    {
+        unique_lock<mutex> lock2(mMutexFinish);
+        if(mbFinished)
+            return;
+    }
+    if(mStopRequest == 0)
+    {
+        mbStopped = false;
+        for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
+            delete *lit;
+        mlNewKeyFrames.clear();
+        mCondStop.notify_all();
+        cout << "Local Mapping RELEASE" << endl;
+    }
 }
 
 bool LocalMapping::AcceptKeyFrames()
@@ -712,21 +708,17 @@ cv::Mat LocalMapping::SkewSymmetricMatrix(const cv::Mat &v)
             -v.at<float>(1),  v.at<float>(0),              0);
 }
 
-void LocalMapping::RequestReset()
+void LocalMapping::reset()
 {
+    unique_lock<mutex> lock(mMutexReset);
+    if(!mbResetRequested)
     {
-        unique_lock<mutex> lock(mMutexReset);
         mbResetRequested = true;
-    }
-
-    while(1)
-    {
+        while(mbResetRequested)
         {
-            unique_lock<mutex> lock2(mMutexReset);
-            if(!mbResetRequested)
-                break;
+            mCondReset.wait(lock);
         }
-        std::this_thread::sleep_for(std::chrono::microseconds(3000));
+        cout << "Local Mapping RESET" << endl;
     }
 }
 
@@ -738,33 +730,24 @@ void LocalMapping::ResetIfRequested()
         mlNewKeyFrames.clear();
         mlpRecentAddedMapPoints.clear();
         mbResetRequested=false;
+        mCondReset.notify_all();
     }
 }
 
-void LocalMapping::RequestFinish()
+void LocalMapping::finish()
 {
-    unique_lock<mutex> lock(mMutexFinish);
-    mbFinishRequested = true;
-}
-
-bool LocalMapping::CheckFinish()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinishRequested;
-}
-
-void LocalMapping::SetFinish()
-{
+    if(isStopped())
+    {
+        release();
+    }
     unique_lock<mutex> lock(mMutexFinish);
     mbFinished = true;
-    unique_lock<mutex> lock2(mMutexStop);
-    mbStopped = true;
 }
 
-bool LocalMapping::isFinished()
-{
-    unique_lock<mutex> lock(mMutexFinish);
-    return mbFinished;
-}
+bool LocalMapping::CheckFinish() 
+{ 
+    unique_lock<mutex> lock(mMutexFinish); 
+    return mbFinished; 
+} 
 
 } //namespace ORB_SLAM

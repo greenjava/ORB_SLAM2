@@ -26,13 +26,13 @@
 #include "Map.h"
 #include "ORBVocabulary.h"
 #include "Tracking.h"
-
+#include "orb_slam2_export.h"
 #include "KeyFrameDatabase.h"
 
 #include <thread>
 #include <mutex>
 #include <g2o/types/types_seven_dof_expmap.h>
-#include "orb_slam2_export.h"
+#include <condition_variable>
 
 namespace ORB_SLAM2
 {
@@ -63,23 +63,15 @@ public:
 
     void InsertKeyFrame(KeyFrame *pKF);
 
-    void RequestReset();
+    void reset();
 
-    // This function will run in a separate thread
+    void stop();
+    void release();
+
+    // This function will run in a separate thread 
     void RunGlobalBundleAdjustment(unsigned long nLoopKF);
 
-    bool isRunningGBA(){
-        unique_lock<std::mutex> lock(mMutexGBA);
-        return mbRunningGBA;
-    }
-    bool isFinishedGBA(){
-        unique_lock<std::mutex> lock(mMutexGBA);
-        return mbFinishedGBA;
-    }   
-
-    void RequestFinish();
-
-    bool isFinished();
+    void finish();
 
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
@@ -98,12 +90,26 @@ protected:
     void ResetIfRequested();
     bool mbResetRequested;
     std::mutex mMutexReset;
+    std::condition_variable mCondReset;
 
-    bool CheckFinish();
-    void SetFinish();
-    bool mbFinishRequested;
+    bool CheckFinish(); 
     bool mbFinished;
     std::mutex mMutexFinish;
+
+    bool isRunningGBA(){ 
+        unique_lock<std::mutex> lock(mMutexGBA); 
+        return mbRunningGBA; 
+    } 
+    bool isFinishedGBA(){ 
+        unique_lock<std::mutex> lock(mMutexGBA); 
+        return mbFinishedGBA; 
+    }
+
+    bool isStopped();
+    bool mbStopped;
+    std::mutex mMutexStop;
+    std::condition_variable mCondStopRequest;
+    std::condition_variable mCondStop;
 
     Map* mpMap;
     Tracking* mpTracker;

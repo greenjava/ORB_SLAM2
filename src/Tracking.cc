@@ -43,19 +43,19 @@ using namespace std;
 namespace ORB_SLAM2
 {
 
-Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, Map *pMap,
-                   KeyFrameDatabase* pKFDB, const string &strSettingPath,
-                   const int sensor, bool bReuseMap):
+Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, Map *pMap, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor, bool bReuseMap):
     mState(NO_IMAGES_YET),
-    mSensor(sensor),
     mbOnlyTracking(false),
     mbVO(false),
     mpORBVocabulary(pVoc),
     mpKeyFrameDB(pKFDB),
-    mpInitializer(nullptr),
+    mpInitializer(static_cast<Initializer*>(nullptr)),
     mpSystem(pSys),
     mpMap(pMap),
-    mnLastRelocFrameId(0)
+    mnLastRelocFrameId(0),
+    mpORBextractorLeft(nullptr),
+    mpORBextractorRight(nullptr),
+    mpIniORBextractor(nullptr)
 {
     // Load camera parameters from settings file
 
@@ -167,10 +167,13 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, Map *pMap, KeyFrameDatabas
     mbVO(false),
     mpORBVocabulary(pVoc),
     mpKeyFrameDB(pKFDB),
-    mpInitializer(static_cast<Initializer*>(NULL)),
+    mpInitializer(static_cast<Initializer*>(nullptr)),
     mpSystem(pSys),
     mpMap(pMap),
-    mnLastRelocFrameId(0)
+    mnLastRelocFrameId(0),
+    mpORBextractorLeft(nullptr),
+    mpORBextractorRight(nullptr),
+    mpIniORBextractor(nullptr)
 {
     //Load parameters
     float fx = camParams.m_fx;
@@ -272,6 +275,14 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, Map *pMap, KeyFrameDatabas
         mState = LOST;
 }
 
+Tracking::~Tracking()
+{
+    delete mpORBextractorLeft;
+    delete mpORBextractorRight;
+    delete mpIniORBextractor;
+    delete mpInitializer;
+}
+
 void Tracking::setOrbParameters(const OrbParameters &orbParams)
 {
 
@@ -282,6 +293,10 @@ void Tracking::setOrbParameters(const OrbParameters &orbParams)
     int nLevels = orbParams.m_nLevels;
     int fIniThFAST = orbParams.m_iniThFAST;
     int fMinThFAST = orbParams.m_minThFAST;
+
+    delete mpORBextractorLeft;
+    delete mpORBextractorRight;
+    delete mpIniORBextractor;
 
     mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
@@ -1114,7 +1129,7 @@ bool Tracking::NeedNewKeyFrame()
         return false;
 
     // If Local Mapping is freezed by a Loop Closure do not insert keyframes
-    if(mpLocalMapper->isStopped() || mpLocalMapper->stopRequested())
+    if(mpLocalMapper->isStopped())
         return false;
 
     const int nKFs = mpMap->KeyFramesInMap();
@@ -1639,13 +1654,13 @@ bool Tracking::Relocalization()
 void Tracking::Reset()
 {
     // Reset Local Mapping
-    cout << "Reseting Local Mapper..."<<endl;
-    mpLocalMapper->RequestReset();
+    cout << "Reseting Local Mapper..." << endl;
+    mpLocalMapper->reset();
     cout << " done" << endl;
 
     // Reset Loop Closing
-    cout << "Reseting Loop Closing...";
-    mpLoopClosing->RequestReset();
+    cout << "Reseting Loop Closing..." << endl;
+    mpLoopClosing->reset();
     cout << " done" << endl;
 
     // Clear BoW Database
