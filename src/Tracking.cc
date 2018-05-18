@@ -277,10 +277,10 @@ Tracking::Tracking(System *pSys, ORBVocabulary *pVoc, Map *pMap, KeyFrameDatabas
 
 Tracking::~Tracking()
 {
-    if(mpORBextractorLeft != nullptr) delete mpORBextractorLeft;
-    if(mpORBextractorRight != nullptr) delete mpORBextractorRight;
-    if(mpIniORBextractor != nullptr) delete mpIniORBextractor;
-    if(mpInitializer != nullptr) delete mpInitializer;
+    delete mpORBextractorLeft;
+    delete mpORBextractorRight;
+    delete mpIniORBextractor;
+    delete mpInitializer;
 }
 
 void Tracking::setOrbParameters(const OrbParameters &orbParams)
@@ -294,9 +294,9 @@ void Tracking::setOrbParameters(const OrbParameters &orbParams)
     int fIniThFAST = orbParams.m_iniThFAST;
     int fMinThFAST = orbParams.m_minThFAST;
 
-    if(mpORBextractorLeft != nullptr) delete mpORBextractorLeft;
-    if(mpORBextractorRight != nullptr) delete mpORBextractorRight;
-    if(mpIniORBextractor != nullptr) delete mpIniORBextractor;
+    delete mpORBextractorLeft;
+    delete mpORBextractorRight;
+    delete mpIniORBextractor;
 
     mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 

@@ -193,15 +193,15 @@ System::System(ORBVocabulary *voc, const Camera &camParams, const OrbParameters 
 
 System::~System()
 {
-    if(mptLocalMapping != nullptr) delete mptLocalMapping;
-    if(mptLoopClosing != nullptr)  delete mptLoopClosing;
+    delete mptLocalMapping;
+    delete mptLoopClosing;
 
-    if(mpLocalMapper != nullptr) delete mpLocalMapper;
-    if(mpLoopCloser != nullptr) delete mpLoopCloser;
+    delete mpLocalMapper;
+    delete mpLoopCloser;
 
-    if(mpKeyFrameDatabase != nullptr) delete mpKeyFrameDatabase;
-    if(mpTracker != nullptr) delete mpTracker;
-    if(mpMap != nullptr) delete mpMap;
+    delete mpKeyFrameDatabase;
+    delete mpTracker;
+    delete mpMap;
 }
 
 void System::setCameraParameters(const Camera &camParams)
