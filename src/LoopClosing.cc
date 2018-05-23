@@ -48,7 +48,8 @@ LoopClosing::LoopClosing(Map *pMap, KeyFrameDatabase *pDB, ORBVocabulary *pVoc, 
     mbStopGBA(false),
     mpThreadGBA(nullptr),
     mbFixScale(bFixScale),
-    mnFullBAIdx(0)
+    mnFullBAIdx(0),
+    mbStopped(false)
 {
     mnCovisibilityConsistencyTh = 3;
 }
@@ -120,7 +121,6 @@ void LoopClosing::Run()
         if(CheckFinish())
             break;
 
-        cout << __FUNCTION__ << " : Loop Closing ALIVE." << endl;   
         std::this_thread::sleep_for(std::chrono::microseconds(5000));
     }
 

@@ -124,7 +124,6 @@ void LocalMapping::Run()
         if(CheckFinish())
             break;
 
-        cout << __FUNCTION__ << " : Local Mapping ALIVE." << endl;   
         std::this_thread::sleep_for(std::chrono::microseconds(3000));
     }
 }
