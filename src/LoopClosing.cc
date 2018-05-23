@@ -105,10 +105,14 @@ void LoopClosing::Run()
                         delete mpThreadGBA;
                     }
                 }
+                cout << __FUNCTION__ << " : Loop Closing NOTIFY ..." << endl;   
                 mCondStopRequest.notify_all();
+                cout << __FUNCTION__ << " : Loop Closing NOTIFY done." << endl;   
                 while(mbStopped)
                 {
+                    cout << __FUNCTION__ << " : Loop Closing WAIT ..." << endl;   
                     mCondStop.wait(lock);
+                    cout << __FUNCTION__ << " : Loop Closing WAIT done." << endl;   
                 }
             }
         }
@@ -116,6 +120,7 @@ void LoopClosing::Run()
         if(CheckFinish())
             break;
 
+        cout << __FUNCTION__ << " : Loop Closing ALIVE." << endl;   
         std::this_thread::sleep_for(std::chrono::microseconds(5000));
     }
 
@@ -445,7 +450,7 @@ bool LoopClosing::ComputeSim3()
 
 void LoopClosing::CorrectLoop()
 {
-    cout << "Loop detected!" << endl;
+    cout << __FUNCTION__ << " : Loop Closing CORRECT LOOP..." << endl;
 
     // If a Global Bundle Adjustment is running, abort it
     if(isRunningGBA())
@@ -619,7 +624,9 @@ void LoopClosing::CorrectLoop()
     // Loop closed. Release Local Mapping.
     mpLocalMapper->release();    
 
-    mLastLoopKFid = mpCurrentKF->mnId;   
+    mLastLoopKFid = mpCurrentKF->mnId;
+
+    cout << __FUNCTION__ << " : Loop Closing CORRECT LOOP done." << endl;   
 }
 
 void LoopClosing::SearchAndFuse(const KeyFrameAndPose &CorrectedPosesMap)
@@ -656,21 +663,23 @@ void LoopClosing::reset()
     unique_lock<mutex> lock(mMutexReset);
     if(!mbResetRequested)
     {
+        cout << __FUNCTION__ << " : Loop Closing RESET..." << endl;
         mbResetRequested = true;
         while(mbResetRequested)
         {
             mCondReset.wait(lock);
         }
-        cout << "Loop Cloosing RESET" << endl;
+        cout << __FUNCTION__ << " : Loop Closing RESET done." << endl;    
     }
 }
 
 void LoopClosing::stop()
 {
+    cout << __FUNCTION__ << " : Loop Closing STOP..." << endl;
     unique_lock<mutex> lock(mMutexStop);
     mbStopped = true;
     mCondStopRequest.wait(lock);
-    cout << "Loop Closing STOP" << endl;
+    cout << __FUNCTION__ << " : Loop Closing STOP done." << endl;
 }
 
 bool LoopClosing::isStopped()
@@ -681,10 +690,13 @@ bool LoopClosing::isStopped()
 
 void LoopClosing::release()
 {
+    cout << __FUNCTION__ << " : Loop Closing RELEASE..." << endl;
     unique_lock<mutex> lock(mMutexStop);
     mbStopped = false;
+    cout << __FUNCTION__ << " : Loop Closing NOTIFY ..." << endl;   
     mCondStop.notify_all();
-    cout << "Loop Closing RELEASE" << endl;
+    cout << __FUNCTION__ << " : Loop Closing NOTIFY done." << endl;   
+    cout << __FUNCTION__ << " : Loop Closing RELEASE done." << endl;
 }
 
 void LoopClosing::ResetIfRequested()
@@ -692,16 +704,20 @@ void LoopClosing::ResetIfRequested()
     unique_lock<mutex> lock(mMutexReset);
     if(mbResetRequested)
     {
+        cout << __FUNCTION__ << " : Loop Closing RESET..." << endl;
         mlpLoopKeyFrameQueue.clear();
         mLastLoopKFid=0;
         mbResetRequested=false;
+        cout << __FUNCTION__ << " : Loop Closing NOTIFY ..." << endl;   
         mCondReset.notify_all();
+        cout << __FUNCTION__ << " : Loop Closing NOTIFY done." << endl;   
+        cout << __FUNCTION__ << " : Loop Closing RESET done" << endl;
     }
 }
 
 void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
 {
-    cout << "Starting Global Bundle Adjustment" << endl;
+    cout << __FUNCTION__ << " : Loop Closing RUN GLOBAL BUNDLE ADJUSTEMENT..." << endl;
 
     int idx =  mnFullBAIdx;
     Optimizer::GlobalBundleAdjustemnt(mpMap,10,&mbStopGBA,nLoopKF,false);
@@ -717,8 +733,8 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
 
         if(!mbStopGBA)
         {
-            cout << "Global Bundle Adjustment finished" << endl;
-            cout << "Updating map ..." << endl;
+            cout << __FUNCTION__ << " : Loop Closing RUN GLOBAL BUNDLE ADJUSTEMENT done." << endl;
+            cout << __FUNCTION__ << " : Loop Closing UPDATING MAP..." << endl;
             mpLocalMapper->stop();
 
             // Get Map Mutex
@@ -791,7 +807,7 @@ void LoopClosing::RunGlobalBundleAdjustment(unsigned long nLoopKF)
 
             mpLocalMapper->release();
 
-            cout << "Map updated!" << endl;
+            cout << __FUNCTION__ << " : Loop Closing UPDATING MAP done." << endl;
         }
 
         mbFinishedGBA = true;

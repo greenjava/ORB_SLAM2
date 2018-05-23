@@ -324,19 +324,25 @@ bool System::MapChanged()
 
 void System::Reset()
 {
+    cout << __FUNCTION__ << " : System RESET..." << endl;
+
     unique_lock<mutex> lock(mMutexReset);
     mbReset = true;
+
+    cout << __FUNCTION__ << " : System RESET done." << endl;
 }
 
 void System::Shutdown()
 {
+    cout << __FUNCTION__ << " : System SHUTDOWN..." << endl;
+
     mpLocalMapper->finish();
     mptLocalMapping->join();
         
     mpLoopCloser->finish();
     mptLoopClosing->join();
 
-    cout<<"Shutdown the system..."<<endl;
+    cout << __FUNCTION__ << " : System SHUTDOWN done." << endl;
 }
 
 void System::SaveTrajectoryTUM(const string &filename)
@@ -547,6 +553,7 @@ vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
 
 void System::SaveMap(const string &filename)
 {
+    cout << __FUNCTION__ << " : System SAVE..." << endl;
     mpLoopCloser->stop();
     mpLocalMapper->stop();
     {
@@ -565,10 +572,12 @@ void System::SaveMap(const string &filename)
     }
     mpLocalMapper->release();
     mpLoopCloser->release();
+    cout << __FUNCTION__ << " : System SAVE done." << endl;
 }
 
 bool System::LoadMap(const string &filename)
 {
+    cout << __FUNCTION__ << " : System LOAD..." << endl;
     std::ifstream in(filename, std::ios_base::binary);
     if (!in)
     {
@@ -593,6 +602,7 @@ bool System::LoadMap(const string &filename)
     Frame::nNextId = mnFrameId;
     cout << " ...done" << endl;
     in.close();
+    cout << __FUNCTION__ << " : System LOAD done." << endl;
     return true;
 }
 

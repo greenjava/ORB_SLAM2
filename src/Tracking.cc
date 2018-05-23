@@ -1654,19 +1654,21 @@ bool Tracking::Relocalization()
 void Tracking::Reset()
 {
     // Reset Local Mapping
-    cout << "Reseting Local Mapper..." << endl;
+    cout << __FUNCTION__ << " : Tracking RESET..." << endl;
+
+    cout << __FUNCTION__ << " : Reseting Local Mapper..." << endl;
     mpLocalMapper->reset();
-    cout << " done" << endl;
+    cout << __FUNCTION__ << " : Reseting Local Mapper done" << endl;
 
     // Reset Loop Closing
-    cout << "Reseting Loop Closing..." << endl;
+    cout << __FUNCTION__ << " : Reseting Loop Closing..." << endl;
     mpLoopClosing->reset();
-    cout << " done" << endl;
+    cout << __FUNCTION__ << " : Reseting Loop Closing done" << endl;
 
     // Clear BoW Database
-    cout << "Reseting Database...";
+    cout << __FUNCTION__ << " : Reseting Database..." << endl;
     mpKeyFrameDB->clear();
-    cout << " done" << endl;
+    cout << __FUNCTION__ << " : Reseting Database done" << endl;
 
     // Clear Map (this erase MapPoints and KeyFrames)
     mpMap->clear();
@@ -1685,6 +1687,7 @@ void Tracking::Reset()
     mlpReferences.clear();
     mlFrameTimes.clear();
     mlbLost.clear();
+    cout << __FUNCTION__ << " : Tracking RESET done." << endl;
 }
 
 void Tracking::ChangeCalibration(const string &strSettingPath)

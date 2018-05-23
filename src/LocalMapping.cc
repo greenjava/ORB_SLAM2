@@ -100,10 +100,14 @@ void LocalMapping::Run()
             unique_lock<mutex> lock(mMutexStop); 
             if(mbStopped) 
             {
+                cout << __FUNCTION__ << " : Local Mapping NOTIFY ..." << endl;   
                 mCondStopRequest.notify_all();
+                cout << __FUNCTION__ << " : Local Mapping NOTIFY done." << endl;   
                 while(mbStopped && !mbNotStop)
                 {
+                    cout << __FUNCTION__ << " : Local Mapping WAIT ..." << endl;   
                     mCondStop.wait(lock);
+                    cout << __FUNCTION__ << " : Local Mapping WAIT done." << endl;   
                 }
                 if(CheckFinish())
                 {
@@ -120,6 +124,7 @@ void LocalMapping::Run()
         if(CheckFinish())
             break;
 
+        cout << __FUNCTION__ << " : Local Mapping ALIVE." << endl;   
         std::this_thread::sleep_for(std::chrono::microseconds(3000));
     }
 }
@@ -567,6 +572,7 @@ cv::Mat LocalMapping::ComputeF12(KeyFrame *&pKF1, KeyFrame *&pKF2)
 
 void LocalMapping::stop()
 {
+    cout << __FUNCTION__ << " : Local Mapping STOP..." << endl;
     unique_lock<mutex> lock(mMutexStop);
     if(!mbStopped){
         mbStopped = true;
@@ -577,7 +583,7 @@ void LocalMapping::stop()
         mCondStopRequest.wait(lock);
     }
     ++mStopRequest;
-    cout << "Local Mapping STOP" << endl;
+    cout << __FUNCTION__ << " : Local Mapping STOP done." << endl;
 }
 
 bool LocalMapping::isStopped()
@@ -588,6 +594,7 @@ bool LocalMapping::isStopped()
 
 void LocalMapping::release()
 {
+
     unique_lock<mutex> lock(mMutexStop);
     --mStopRequest;
     {
@@ -597,12 +604,15 @@ void LocalMapping::release()
     }
     if(mStopRequest == 0)
     {
+        cout << __FUNCTION__ << " : Local Mapping RELEASE..." << endl;
         mbStopped = false;
         for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
             delete *lit;
         mlNewKeyFrames.clear();
+        cout << __FUNCTION__ << " : Local Mapping NOTIFY ..." << endl;   
         mCondStop.notify_all();
-        cout << "Local Mapping RELEASE" << endl;
+        cout << __FUNCTION__ << " : Local Mapping NOTIFY done." << endl;   
+        cout << __FUNCTION__ << " : Local Mapping RELEASE done." << endl;
     }
 }
 
@@ -713,12 +723,13 @@ void LocalMapping::reset()
     unique_lock<mutex> lock(mMutexReset);
     if(!mbResetRequested)
     {
+        cout << __FUNCTION__ << " : Local Mapping RESET..." << endl;
         mbResetRequested = true;
         while(mbResetRequested)
         {
             mCondReset.wait(lock);
         }
-        cout << "Local Mapping RESET" << endl;
+        cout << __FUNCTION__ << " : Local Mapping RESET done." << endl;
     }
 }
 
@@ -727,21 +738,27 @@ void LocalMapping::ResetIfRequested()
     unique_lock<mutex> lock(mMutexReset);
     if(mbResetRequested)
     {
+        cout << __FUNCTION__ << " : Local Mapping RESET..." << endl;
         mlNewKeyFrames.clear();
         mlpRecentAddedMapPoints.clear();
         mbResetRequested=false;
+        cout << __FUNCTION__ << " : Local Mapping NOTIFY ..." << endl;   
         mCondReset.notify_all();
+        cout << __FUNCTION__ << " : Local Mapping NOTIFY done." << endl;   
+        cout << __FUNCTION__ << " : Local Mapping RESET done." << endl;
     }
 }
 
 void LocalMapping::finish()
 {
+    cout << __FUNCTION__ << " : Local Mapping FINISH..." << endl;
     if(isStopped())
     {
         release();
     }
     unique_lock<mutex> lock(mMutexFinish);
     mbFinished = true;
+    cout << __FUNCTION__ << " : Local Mapping FINISH done." << endl;
 }
 
 bool LocalMapping::CheckFinish() 
